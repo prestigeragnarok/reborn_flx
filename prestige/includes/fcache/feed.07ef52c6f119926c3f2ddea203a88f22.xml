@@ -1,0 +1,4315 @@
+<?xml version="1.0"?>
+<rss version="2.0"><channel><title>Latest Development Announcements</title><link>https://rathena.org/board/rss/2-latest-development-announcements.xml/</link><description>A feed for development announcements</description><language>en</language><item><title>Transitioned from yaml-cpp to rapidyaml</title><link><![CDATA[https://rathena.org/board/topic/130698-transitioned-from-yaml-cpp-to-rapidyaml/?do=findComment&comment=405409]]></link><description>So long yaml-cpp, hello rapidyaml!
+ 
+
+
+	As of Git Hash: d1b7061, rAthena has transitioned from using yaml-cpp as the 3rd party tool for parsing YAML files to rapidyaml (or ryml).
+ 
+
+
+	What this means:
+ 
+
+
+	The yaml-cpp library gave us a great start into the world of yaml, but as we made more conversions of our databases from CSV to YAML, the load time began to grow. The ryml content is parsed into a single index-based array which is not like any standard STL. On average, ryml parses YAML at about ~150MB/s on Linux and ~100MB/s on Windows (vs2017). Compared to yaml-cpp, ryml is in general between 10 and 70 times faster!
+ 
+
+
+	An optimization was also made to itemdb_searchname1 function which reduced its complexity to constant. Item database parsing function also has reduced complexity to linear complexity. This results in reduced loading time in debug mode to a fifth compared to using yaml-cpp!
+ 
+
+
+	What this means to developers:
+ 
+
+
+	Overall testing and usage of rAthena is much faster, in debug and release modes. We&#x2019;ve kept our YamlDatabase class the same! This means that over 99% of the structure from using yaml-cpp carried over to ryml in terms of source side work. The YAML files themselves require no updates or changes!
+ 
+
+
+	Other than that, enjoy the extra speed!
+ 
+
+
+	Thanks to @Lemongrass, @Secrets, and @nitrous for their help in getting this implemented!
+ 
+
+
+	PS: I realize I posted this on April 1st, but I can guarantee this update is quite the contrary!</description><pubDate>Fri, 01 Apr 2022 22:10:16 +0000</pubDate></item><item><title>Conversion of Monster Database to YAML</title><link><![CDATA[https://rathena.org/board/topic/127564-conversion-of-monster-database-to-yaml/?do=findComment&comment=393953]]></link><description><![CDATA[MobDB -&gt; YAML!
+ 
+
+
+	As of Git Hash: 7992e08, rAthena's monster database has been converted to YAML! Sorry for the delay of this post!
+ 
+
+
+	What this means:
+ 
+
+
+	The monster database being in YAML format means that the database is now much more human-readable, just like the item database. This allows for quick review, modification, and addition of monsters without having to memorize the CSV format or use any third party tools. The parser now also has much better error handling when reading monsters into memory so tracking down those pesky typos is a thing of the past!
+ 
+
+
+	The update combines mob_race2 and mob_drop databases into the mob_db so there is much less searching around multiple databases when doing anything with monsters!
+ 
+
+
+	The Mode field has been adjusted. rAthena will now be following the Aegis format of utilizing AI and Class to define monster modes. Don't fret, the Mode field is still fully supported for any custom monster modes! A detailed document with the AI and Class values can be found in doc/mob_db_mode_list.txt.
+ 
+
+
+	Each monster can now be classified with multiple RaceGroups. Before a monster was limited to a single group, but that is a thing of the past!
+ 
+
+
+	As with any YAML conversion we have provided an option in the CSV2YAML tool built right into rAthena! Just build the CSV2YAML tool within Visual Studio or via Make and run the executable. The tool will provide you with general steps and convert your custom monsters right on over to the YAML format!
+ 
+
+
+	Following suit with the item database conversion, the monster database will still support SQL! Simply continue to utilize the YAML2SQL tool which can convert the YAML monster database into SQL format. This allows servers who utilize SQL to continue with this method.
+ 
+
+
+	What this means to developers:
+ 
+
+
+	Pull Requests can be reviewed much quicker and much more simpler. Identifying the actual change to the monster and easily verifying said change without having to count commas!
+ 
+
+
+	Comparing monster data to Aegis becomes easier for the AI and Class as it's easy to identify immediately what the monster's mode should be without having to count the custom mode bits in rAthena.
+ 
+
+
+	Additional features being added to the monster database no longer requires the development of a side database. A vast majority of the monster data is now part of the mob_db structure and can continue to grow in this format! As already seen with the Green Aura for MVP update from kRO.
+ 
+
+
+	 
+ 
+
+
+	Redefined Import System:
+ 
+
+
+	Now that the mob_db is in YAML format, the adjustment of monsters is much simpler. If a change is being made to an monster only the parts that are being changed have to be defined in the import. Below are some examples:
+ 
+
+
+	Adjusting Scorpion attack to 1000.
+ 
+
+
+  - Id: 1001
+    Attack: 1000
+
+
+	Allow Amon Ra to walk and adjust the Yggdrasil Berry to a Diamond at 80% drop rate.
+ 
+
+
+  - Id: 1511
+    Modes:
+      CanMove: true
+    MvpDrops:
+      - Item: Diamond
+        Rate: 8000
+        Index: 0
+
+
+	Check out the mob_db documentation for further details!
+ 
+
+
+	Thanks to @Lemongrass, @nitrous, and lukasrmattos for their help!]]></description><pubDate>Thu, 04 Mar 2021 13:40:52 +0000</pubDate></item><item><title>Conversion of Item Database to YAML</title><link><![CDATA[https://rathena.org/board/topic/126288-conversion-of-item-database-to-yaml/?do=findComment&comment=387648]]></link><description><![CDATA[ItemDB -&gt; YAML!
+ 
+
+
+	As of Git Hash: 04cfe17, rAthena's item database has been converted to YAML!
+ 
+
+
+	What this means:
+ 
+
+
+	The item database being in YAML format means that the database is now much more human-readable. This allows for quick review, modification, and addition of items without having to memorize the CSV format or use any third party tools. The parser now also has much better error handling when reading items into memory so tracking down those pesky typos is a thing of the past!
+ 
+
+
+	The update combines item_avail, item_buyingstore, item_delay, item_flag, item_nouse, item_stack, and item_trade databases into the item_db so there is much less searching around multiple databases when doing anything with items!
+ 
+
+
+	As items are no longer defined in a single row, this means the flat file has grown in size. To ease the on load text editors for people's computers who may not have the horsepower we split the items as they are in game via Consumables, Equipment, and Etc.
+ 
+
+
+	The Job restriction for items has been cleaned up so that custom masks don't have to be made and removes a horrible restriction for those adding custom classes to their servers. Now it's as easy as defining the EAJ_* constant... and that's it!
+ 
+
+
+	The item combo system has had a massive cleanup in the background. We no longer do sketchy memory management and manipulation with a move to use standard libraries provided by C++11!
+ 
+
+
+	As with any YAML conversion we have provided an option in the CSV2YAML tool built right into rAthena! Just build the CSV2YAML tool within Visual Studio or via Make and run the executable. The tool will provide you with general steps and convert your custom items right on over to the YAML format. No muss, no fuss!
+ 
+
+
+	Something that was brought up in the Pull Request was the support for SQL. Many people were against the move to YAML because the support for SQL was compromised. Well, we are happy to say that SQL is still supported and isn't going anywhere! We've developed a new tool, YAML2SQL, which can convert the YAML item database into SQL format. This allows servers who utilize SQL to continue with this method. We've also gone a step further and provided a SQL View which will create a new compatibility table without breaking support for your Control Panel/databases. The SQL View is optional though once the Control Panel/database is setup to utilize the new table. The new and fuller item data in this table also provides much more detail to the item database than ever before! You can read more details in our README!
+ 
+
+
+	What this means to developers:
+ 
+
+
+	Pull Requests can be reviewed much quicker and much more simpler. Identifying the actual change to the item and easily verifying said change without having to count commas!
+ 
+
+
+	Additional features being added to the item database no longer requires the development of a side database. A vast majority of the item data is now part of the item_db structure and can continue to grow in this format!
+ 
+
+
+	 
+ 
+
+
+	Redefined Import System:
+ 
+
+
+	Now that the item_db is in YAML format, the adjustment of items is much simpler. If a change is being made to an item only the parts that are being changed have to be defined in the import. Below are some examples:
+ 
+
+
+	Adjusting Red_Potion weight to 10 and increasing the heal rate in the script.
+ 
+
+
+- Id: 501
+  Weight: 100
+  Script: |
+    itemheal rand(100,120),0;
+
+
+	Remove the Thief classes from being able to equip the Cap.
+ 
+
+
+  - Id: 2226
+    Jobs:
+      Assassin: false
+      Rogue: false
+      Thief: false
+
+
+	Add a stack limit of 10 to Meat for inventory only.
+ 
+
+
+  - Id: 517
+    Stack:
+      Amount: 10
+      Inventory: true
+
+
+	Check out the item_db documentation for further details!
+ 
+
+
+	Thanks to @Lemongrass, @Capuche, and @Cydh for their help!]]></description><pubDate>Thu, 22 Oct 2020 01:58:25 +0000</pubDate></item><item><title>December Digest 2019</title><link><![CDATA[https://rathena.org/board/topic/122201-december-digest-2019/?do=findComment&comment=371415]]></link><description><![CDATA[December Digest 2019 
+	The following digest covers the month of December 2019
+ 
+
+
+	 
+ 
+
+
+	Staff Changes:
+ 
+
+
+		None﻿
+	
+
+	Development Highlights:﻿﻿
+ 
+
+
+		CORE:
+
+		
+				Fix several issues with pets
+			
+			
+				Added Conf setting to Enable mob-warping when standing on Dimensional Door
+			
+			
+				Fixed equip view to only send equipped item
+			
+			
+				Fixed SC_KEEPING and SC_BARRIER exploit after classchange
+			
+			
+				Corrected Enchant Arms for older clients
+			
+			
+				Threshold for blacksmith refine fame points
+			
+			
+				Allow NPC view data modifications
+			
+			
+				Corrected Vacuum Extreme behavior
+			
+			
+				Corrected Gatling Fever damage
+			
+		
+	
+		DATABASE:
+		
+				Biolab Edda Weapon
+			
+			
+				Fixed place names and other typos
+			
+			
+				Converted Magic Mushroom Database to YAML
+			
+			
+				Removed pre-renewal Magic Mushroom database
+			
+			
+				Converted Abra Database to YAML
+			
+			
+				Converted Improvised Song Database to YAML
+			
+			
+				Converted Reading Spellbook Database to YAML
+			
+			
+				Migrated atcommand aliases and help to YAML
+			
+		
+	
+		SCRIPT:
+		
+				Corrected Horror Toy Factory treasure drop
+			
+			
+				Fixed typo in academy.txt
+			
+			
+				Corrected Rock Ridge monster spawn
+			
+			
+				Moved Material Seller shop to Renewal
+			
+			
+				Adding Missing Portals
+			
+			
+				Fixed 'Finding the Moving Island' quest spawning the wrong monsters on pre-renewal
+			
+		
+	
+		OTHERS:
+		
+				Added primary key to tables that lack them &amp; Dropped sstatus table
+			
+		
+
+	 
+ 
+
+
+	 Show your support to rAthena by submitting your Issue or Pull Req﻿u﻿e﻿st﻿﻿﻿﻿﻿s﻿﻿!﻿ ﻿]]></description><pubDate>Mon, 13 Jan 2020 01:34:31 +0000</pubDate></item><item><title>October + November Digest 2019</title><link><![CDATA[https://rathena.org/board/topic/121838-october-november-digest-2019/?do=findComment&comment=369954]]></link><description>October Digest 2019 
+		The following digest covers the month of October 2019.
+	 
+
+	
+		 
+	 
+
+	
+		Staff Changes:
+	 
+
+	
+			None.
+		
+	
+		Development Highlights:&#xFEFF;&#xFEFF;
+	 
+
+	
+			CORE:
+
+			
+					Fixed inventory check while buying item issue
+				
+				
+					Corrected RDMOPT_DAMAGE_PROPERTY_element_USER
+				
+				
+					Fixed achievementexists script command
+				
+				
+					Fixed memory management for achievements
+				
+				
+					Fixed reply for adding to equip switch
+				
+				
+					Removed jAthena 1082 legacy code regarding castle defense rate
+				
+				
+					Corrected NPC view constant verification
+				
+				
+					Fixed SG_FRIEND not increasing TK_COUNTER's rate when MO_COMBOFINISH is used
+				
+				
+					Corrected atcommand mobinfo for VIP
+				
+				
+					Corrected battle config default_fixed_castrate
+				
+				
+					Fixed renewal ASPD passive modifiers
+				
+				
+					Fixed script command getunits 
+				
+				
+					Fix item bonus SkillUseSPRate
+				
+				
+					Corrected Gentle Touch skills
+				
+			
+		
+			DATABASE:
+			
+					Added new missing hateffects
+				
+				
+					Lowered Eden Uniform Tier 1 level requirement to level 7
+				
+				
+					Updated nightmare biolab monsters drops
+				
+				
+					Updated Achievement EXP to official values
+				
+				
+					Job Improvement Project - Sura
+				
+				
+					Updated Ninja Skills
+				
+			
+		
+			SCRIPT:
+			
+					Questinfo requirement update
+				
+				
+					Payon script header fix
+				
+				
+					Added game ID check for Horror toy factory instance
+				
+				
+					Lighthalzen Quest NPC ID Fix
+				
+				
+					Added official Malangdo Guide
+				
+				
+					Corrected Dual Monster Race wager check
+				
+			
+		
+			OTHERS:
+			
+					Fixed small mistake in VS filters
+				
+				
+					Updated EditorConfig
+				
+				
+					Ignore files generated by CMake in CMakeFiles directory
+				
+			
+	
+		 
+	 
+
+	
+		 
+	 
+
+	
+		 
+	 
+
+	
+		November Digest 2019 
+		The following digest covers the month of November 2019
+	 
+
+	
+		 
+	 
+
+	
+		Staff Changes:
+	 
+
+	
+			None&#xFEFF;
+		
+	
+		Development Highlights:&#xFEFF;&#xFEFF;
+	 
+
+	
+			CORE:
+
+			
+					Added bonus bVariableCast and bonus2 bSkillVariableCast for Pre-renewal
+				
+				
+					Added progress for loading yaml databases
+				
+				
+					Fixed code for Star Gladiator day calculation
+				
+			
+		
+			DATABASE:
+			
+					Fixed missing modes of Malangdo Culvert mobs
+				
+				
+					Corrected Bacsojin Pet
+				
+			
+		
+			SCRIPT:
+			
+					Fixed quest_16_1 typo
+				
+				
+					Corrected Succession of the Prince quest
+				
+			
+		
+			OTHERS:
+			
+					Added support for constants in csv2yaml 
+				
+				
+					Added unsigned rate support for yaml
+				
+				
+					Fixed appveyor building
+				
+				
+					Updated the CSV2YAML tool to utilize YAML Emitter
+				
+			
+	
+		 
+	 
+
+	
+		 Show your support to rAthena by submitting your Issue or Pull Req&#xFEFF;u&#xFEFF;e&#xFEFF;st&#xFEFF;&#xFEFF;&#xFEFF;&#xFEFF;&#xFEFF;s&#xFEFF;&#xFEFF;!&#xFEFF; &#xFEFF;</description><pubDate>Sun, 01 Dec 2019 02:28:42 +0000</pubDate></item><item><title>August + September Digest 2019</title><link><![CDATA[https://rathena.org/board/topic/121210-august-september-digest-2019/?do=findComment&comment=367254]]></link><description>August Digest 2019 
+	The following digest covers the month of August 2019.
+ 
+
+
+	 
+ 
+
+
+	Staff Changes:
+ 
+
+
+		None.
+	
+
+	Development Highlights:&#xFEFF;&#xFEFF;
+ 
+
+
+		CORE:
+
+		
+				Fixed dropall counter (beb6b579)
+			
+			
+				Fixed item removal in Rodex (4664e88b)
+			
+			
+				Corrected Joint Beat damage formula (63c4c9c3)
+			
+			
+				Added multi-hit critical damage display support (08d160aa)
+			
+			
+				Cleaned up left handed checks (81c5dc9a)
+			
+			
+				Corrected Fame Points for level 3 weapons (78b2f109)
+			
+			
+				Fixed Escape not working with bNoKnockback (e3fd7a6f)
+			
+		
+	
+		DATABASE:
+		
+				Updated duration for Purring (8dfdac32)
+			
+			
+				Corrected pet bonuses (479cc28a)
+			
+			
+				Removed obsolete Novice Rod bonus (5fb6dd7e)
+			
+			
+				Added new achievements (bbca9efd)
+			
+		
+	
+		SCRIPT:
+		
+				Corrected position of Shrimp Trader (c1112c28)
+			
+			
+				Corrected Dandelion Request script (ddb9e814)
+			
+			
+				Corrected custom Job Changer quest item reward (3126bd8a)
+			
+			
+				Updated Young Man position (ce42168b)
+			
+			
+				Corrected Brasilis Sign Post location (0d1eb994)
+			
+			
+				Added items for Advanced Potions NPC (62fa1b86)
+			
+			
+				Portals correction - yuno_in03 (752d3143)
+			
+		
+	
+		OTHERS:
+		
+				None
+			
+		
+
+	 
+	 
+
+		 
+	 
+
+
+
+	 
+ 
+
+
+	September Digest 2019 
+	The following digest covers the month of September 2019
+ 
+
+
+	 
+ 
+
+
+	Staff Changes:
+ 
+
+
+		None&#xFEFF;
+	
+
+	Development Highlights:&#xFEFF;&#xFEFF;
+ 
+
+
+		CORE:
+
+		
+				Removed the option ID requirement for countitem3, rentitem3, getitem3, makeitem3, delitem3 (378e44d8)
+			
+			
+				Dropped ragsrvinfo functionality (bc15f5ce)
+			
+			
+				Small isequippedcnt script command update (786186f7)
+			
+			
+				Reduced list field length in ipbanlist table from 255 to 15 (8431410a)
+			
+			
+				Corrected pet bonuses not applying (aa63c855)
+			
+			
+				Empty message in announce script command (be1194e4)
+			
+		
+	
+		DATABASE:
+		
+				Minor item_db fix (df930fdb)
+			
+			
+				Fixed Old Money Pocket being unusable (ebc61dfb)
+			
+			
+				Synced Geffen Magic Tournament mob_skill_db name with mob_db name (1658067f)
+			
+			
+				Item Database Update - Lava set and Glast Heim Castle F3 weapon (7d3d952f)
+			
+			
+				Corrected Tornado Axe equip level (8b4306e6)
+			
+		
+	
+		SCRIPT:
+		
+				Fixed typo in item 5330's script (9f4e40d4)
+			
+			
+				Updated Euphy's WoE controller using the new mail script command (a83e9f34)
+			
+			
+				Updated instance_warpall script side (b7f38cf8)
+			
+			
+				Added quest checks for Geffen Magic Tournament (9b11301f)
+			
+			
+				Corrected Clock Tower Gatekeeper dialog (6db35cd6)
+			
+			
+				Old Driver band Yellow script fix (3fa8da13)
+			
+		
+	
+		OTHERS:
+		
+				Make appveyor use the tools/ci/sql.bat batch script (76698145)
+			
+			
+				Fixed typos channel.hpp comments (152bdb0e)
+			
+		
+
+	 
+	 
+
+		 Show your support to rAthena by submitting your Issue or Pull Req&#xFEFF;u&#xFEFF;e&#xFEFF;st&#xFEFF;&#xFEFF;&#xFEFF;&#xFEFF;&#xFEFF;s&#xFEFF;&#xFEFF;!&#xFEFF; &#xFEFF;</description><pubDate>Thu, 03 Oct 2019 04:06:15 +0000</pubDate></item><item><title>June + July Digest 2019</title><link><![CDATA[https://rathena.org/board/topic/120351-june-july-digest-2019/?do=findComment&comment=364672]]></link><description>June Digest 2019 
+	The following digest covers the month of June 2019.
+ 
+
+
+	 
+ 
+
+
+	Staff Changes:
+ 
+
+
+		None.
+	
+
+	Development Highlights:&#xFEFF;&#xFEFF;
+ 
+
+
+		CORE:
+
+		
+				Fixed dissapearing items when cart is full (8ed3d058)
+			
+			
+				Corrected a potential crash from equip switch (8cfee2c8)
+			
+			
+				Corrected Enchant Arms for older clients (754274bc)
+			
+			
+				Corrected Weapon Forging inventory search (052a4fd1)
+			
+			
+				Corrected the value returned by getmapflag script command for MF_RESTRICTED (f8ea43eb)
+			
+			
+				Corrected PK Mapflag assignment (a548f20c)
+			
+			
+				Sense - show 0 for negatives (19835b63)
+			
+			
+				Implemented instance_live_info script command to retrieve some data of running instances (c1975d7e)
+			
+		
+	
+		DATABASE:
+		
+				Removed the duplicate item ID from item_db.txt (5c1ef394)
+			
+			
+				Updated item_db.txt (aae31a19)
+			
+		
+	
+		SCRIPT:
+		
+				Corrected the map name for announcing the entrance in the Morse cave instance (3cb23fd5)
+			
+			
+				Fixed an issue with a cooldown after killing Wounded Morroc (34971e57)
+			
+			
+				Implemented the Paramarket shops (a16f0ebb)
+			
+		
+	
+		OTHERS:
+		
+				Added the skeleton for the yaml converter (c2899d75)
+			
+			
+				Added missing gitignores for csv2yaml (a4bbb932)
+			
+			
+				Add SnakeDrak as author (46d04269)
+			
+			
+				Fixed csv2yaml for guild skill tree (232b3885)
+			
+			
+				Clean-up doc script commands (7cc8c964)
+			
+		
+
+	 
+ 
+
+
+	List of Contributors:
+ 
+
+
+	@aleos89, @attackjom, @Atemo, @Daegaladh, @flamefury, @functor-x, @jenkijo, @Lemongrass3110, @LiamKarlMitchell, @Normynator, @Tokeiburu
+ 
+
+
+	 
+ 
+
+
+	 
+ 
+
+
+	 
+ 
+
+
+	July Digest 2019 
+	The following digest covers the month of July 2019
+ 
+
+
+	 
+ 
+
+
+	Staff Changes:
+ 
+
+
+		None&#xFEFF;
+	
+
+	Development Highlights:&#xFEFF;&#xFEFF;
+ 
+
+
+		CORE:
+
+		
+				Implemented convertpcinfo script command (5fae7c26)
+			
+			
+				Fixed a clone issue (912d97e4)
+			
+			
+				Corrected autospell stacking (32525bad)
+			
+			
+				Pet Fix Client after 20180704 (87b85819)
+			
+			
+				Prevent moving/dropping the pet egg if it's hatched (454163c4)
+			
+			
+				Fixed invalid item errors in achievements (8bb6b119)
+			
+			
+				Fixed STR affecting mob damage in pre-renewal (2ca417b6)
+			
+			
+				Cleaned up Joint Beat behavior (cb2c553f, 6d199ca7, 5702dc3c)
+			
+			
+				Fixed Achievement Level progression (ac46920e)
+			
+			
+				Fixed CZ_STANDING_RESURRECTION check (17f32a17)
+			
+			
+				Fixed typo with wrong password length (d9db877d)
+			
+			
+				Corrected Strip duration (4ea1b254)
+			
+			
+				Corrected RENEWAL_ASPD macro processing (d476934c)
+			
+			
+				Corrected pre-renewal Heal formula (3caf6687)
+			
+			
+				Corrected a compile warning on GCC 8 (3dd388ac)
+			
+			
+				Properly free function script counter (8050f7c8)
+			
+			
+				Removed leftover variable (90d603d1)
+			
+		
+	
+		DATABASE:
+		
+				Corrected Magnum Break delay (fc2c6e02)
+			
+		
+	
+		SCRIPT:
+		
+				Fixed quest cooldown display bug for Quest Board NPC (bf52c52a)
+			
+		
+	
+		OTHERS:
+		
+				Fixed pet evolution upgrade script (e6eaa9fe)
+			
+			
+				Made mob sprite column unique (d80e111e)
+			
+			
+				Updated README.md (68e98a87)
+			
+			
+				Small doc/script_commands.txt correction (0b1184e4)
+			
+		
+
+	 
+ 
+
+
+	List of Contributors:
+ 
+
+
+	@4144, @admkakaroto, @aleos89, @Asheraf, @Badarosk0, @cahya1992, @cydh, @daisyanne1380, @Everade, @gengstergile, @Indigo000, @laziem, @mazvi, @mrjnumber1, @naffej, @Normynator, @Playtester, @RadianFord, @rfperuch, @sader1992, @SeravySensei, @Stingor, @teededung, @Tokeiburu
+ 
+
+
+	 
+ 
+
+
+	 Show your support to rAthena by submitting your Issue or Pull Req&#xFEFF;u&#xFEFF;e&#xFEFF;st&#xFEFF;&#xFEFF;&#xFEFF;&#xFEFF;&#xFEFF;s&#xFEFF;&#xFEFF;!&#xFEFF; &#xFEFF;&#xFEFF;</description><pubDate>Thu, 01 Aug 2019 03:22:45 +0000</pubDate></item><item><title>May Digest 2019</title><link><![CDATA[https://rathena.org/board/topic/119468-may-digest-2019/?do=findComment&comment=362279]]></link><description>May Digest 2019 
+	The following digest covers the month of May 2019
+ 
+
+
+	 
+ 
+
+
+	Staff Changes:
+ 
+
+
+		None&#xFEFF;
+	
+
+	Development Highlights:&#xFEFF;&#xFEFF;&#xFEFF;
+ 
+
+
+		CORE:
+
+		
+				Fixed potential race-condition possibility in cart item transaction (7f772c32)
+			
+			
+				Fixed some bonuses getting capped (69843289)
+			
+			
+				Additional fixes for cart exploit (7ad1b32d)
+			
+			
+				Login Server console command issue (b9fb0d5a)
+			
+			
+				Fixed maintenance and gm_allow_group config (317146c0)
+			
+			
+				Fixed getareaunits coordinates (ddb7d903)
+			
+			
+				Updated viewpoint command (a3fc44ef)
+			
+			
+				Changed renewal start coordinates (eb4b4625)
+			
+		
+	
+		DATABASE:
+		
+				Renewal item database update (9a7b1780, e9297658)
+			
+			
+				Gigantic Bow supposed to subtract HIT instead of add (656bcf31)
+			
+			
+				Updated KRO Class-Shadow costume  (097ed5eb)
+			
+			
+				Autobonus correction (f8a1427d)
+			
+			
+				Added shadow items - ID range 24320~24424 (164dc9a6)
+			
+			
+				Corrected Twin Pompom By JB item bonus (1bd524a7)
+			
+			
+				Updated Death Fire (ID 13192) and Rolling Thunder (ID 13193) (47ef1ea0)
+			
+			
+				Updated new items weight from kRO (13db834c)
+			
+			
+				Corrected new hats (0b9d7603)
+			
+			
+				Corrected Rice_Cake_Soup (ID 669) item script (e48c1495)
+			
+		
+	
+		SCRIPT:
+		
+				None
+			
+		
+	
+		OTHERS:
+		
+				None
+			
+		
+
+	 
+ 
+
+
+	List of Contributors:
+ 
+
+
+	@aleos89, @AnnieRuru, @Atemo, @attackjom, @AzarthMZintos, @Badarosk0, @crazystorm2017, @CyberDevil75, @cydh, @flamefury, @lChyztl, @mazvi, @Normynator, @sader1992, @schickrazor, @secretdataz. @SeravySensei, @teededung, @tkporreta, @RagVision
+ 
+
+
+	 
+ 
+
+
+	 Show your support to rAthena by submitting your Issue or Pull Requests!</description><pubDate>Mon, 03 Jun 2019 10:07:10 +0000</pubDate></item><item><title>Potential duplication exploit</title><link><![CDATA[https://rathena.org/board/topic/119112-potential-duplication-exploit/?do=findComment&comment=361136]]></link><description>We've found a race-condition exploit involving cart which could allow duplication of items.
+ 
+
+
+	The rAthena team has released an update that fixes the exploit. rAthena users are advised to update as soon as possible.
+ 
+
+
+	Commit link: https://github.com/rathena/rathena/commit/7f772c32d3be201861946bb64720c231828465ac</description><pubDate>Sat, 04 May 2019 12:57:26 +0000</pubDate></item><item><title>March + April Digest 2019</title><link><![CDATA[https://rathena.org/board/topic/119111-march-april-digest-2019/?do=findComment&comment=361130]]></link><description><![CDATA[March Digest 2019 
+		The following digest covers the month of March 2019.
+	 
+
+	
+		 
+	 
+
+	
+		Staff Changes:
+	 
+
+	
+
+			@crazyarashi and @Normynator are now a Developers.﻿
+		
+	
+
+		Development Highlights:﻿﻿
+	 
+
+	
+
+			CORE:
+
+			
+
+					Updated the YAML parsing method (78eed022)
+				
+				
+					Fixed possible null pointer dereference in Taekwon Mission skill logic (f5e8af0d)
+				
+				
+					Fixed an issue with AG_BATTLE and AG_TAMING (54ac2ae1)
+				
+				
+					Fixed LGTM formatting alert (bf27041e)
+				
+				
+					Fixed flag's overwritten for bonus3 bSubEle and bonus3 bAddEle (bce4e0b6)
+				
+				
+					Corrected unit calculation with setunitdata (9500c06d)
+				
+				
+					Added pcblock and checkpcblock script commands (3e0d3d2f, e4b41ef7)
+				
+				
+					Add some missing Warning (ed37a533)
+				
+				
+					Implementing atcommand_disable_npc config (c2abd6d1)
+				
+				
+					Capped rate value for status_get_sc_def (15969139)
+				
+				
+					setpcblock script command (7dde174c)
+				
+			
+
+		
+			DATABASE:
+			
+
+					Enabled a few achievement targets (56349cb5)
+				
+				
+					Fixed renewal item database bugs (2f6a2c02)
+				
+				
+					Fix item and NPC names (658d4207, 658d4207)
+				
+				
+					Fixed missing item script of Castle_Treasure_Box (bc99c24a)
+				
+				
+					Splitted guild_skill_tree.txt into re and pre-re (cbe0d6b2)
+				
+				
+					Corrected Summoner's base ASPD (d1b35db7)
+				
+				
+					Update Geffen Magic Tournament Quest DB &amp; Clean up (42810ad4)
+				
+				
+					Corrected Vellum and Vanish item bonuses (ed83999d)
+				
+				
+					Corrected Rebellion cast times (972a14e4)
+				
+				
+					Implemented Magma Eruption Dot Damage (9f4a569e)
+				
+				
+					Updated item script of Test_Reagent (0cfc3216)
+				
+				
+					Initial implementation of pet evolution system + Pet DB conversion to yaml (ac558d7c)
+				
+				
+					Added some missing monsters' drops of monsters around rockridge (b245e0f6)
+				
+				
+					Fixed vanish bonuses (eb88f0ce)
+				
+			
+
+		
+			SCRIPT:
+			
+
+					Updated tr0n's Quest Board (ed0e068c)
+				
+				
+					Corrected several npc name in quests_ein.txt (e74e1e11)
+				
+				
+					Corrected KVM Logistic Officer item ID (cc11869a)
+				
+				
+					Update guides_comodo.txt (264932c3)
+				
+				
+					Adding NPC Lighthalzen (1bbde624)
+				
+				
+					Fixed wrong NPC coordinate (f0f94f0c)
+				
+				
+					Fix wrong next function call (b1e1dbfb)
+				
+				
+					eden_iro.txt update (339e6c67)
+				
+				
+					NPC coordinate changes (a334b026)
+				
+			
+
+		
+			OTHERS:
+			
+
+					Added the skeleton for the yaml converter (c2899d75)
+				
+				
+					Added missing gitignores for csv2yaml (a4bbb932)
+				
+				
+					Add SnakeDrak as author (46d04269)
+				
+				
+					Fixed csv2yaml for guild skill tree (232b3885)
+				
+				
+					Clean-up doc script commands (7cc8c964)
+				
+			
+
+	
+
+		 
+	 
+
+	
+		List of Contributors:
+	 
+
+	
+		@aleos, @Atemo, @Balferian, @BrOgBr, @CairoLee, @cydh, @Daegaladh, @exneval, @Indigo000, @JohnnyPlayy, @keitenai, @Lemongrass3110, @Litro, @sader1992, @secretdataz, @SeravySensei, @Sigtus, @Siriousb, @SnakeDrak, @teededung, @trickyloki3, @zackdreaver
+	 
+
+	
+		 
+	 
+
+	
+		 
+	 
+
+	
+		 
+	 
+
+	
+		April Digest 2019 
+		The following digest covers the month of April 2019
+	 
+
+	
+		 
+	 
+
+	
+		Staff Changes:
+	 
+
+	
+
+			None﻿
+		
+	
+
+		Development Highlights:﻿﻿
+	 
+
+	
+
+			CORE:
+
+			
+
+					Corrected block_action behaviour (66b82732)
+				
+				
+					Adjusted OnTouch overlap behavior (c977558c)
+				
+				
+					Updated Firewall cast check (7c313a77)
+				
+				
+					Fixed Defending Aura (a8185e62)
+				
+				
+					Added caps to item bonus rates (a0bcb92b)
+				
+				
+					Corrected guild level increases (c7722624)
+				
+				
+					Added several warning messages (9aa5f7d8)
+				
+				
+					Adjusted pet walk speed (06020502)
+				
+				
+					Cleaned up countitem-type script commands (f047a6a5)
+				
+				
+					Corrected a compile error (3057af75)
+				
+				
+					Corrected countitem_sub return value (8975682f)
+				
+				
+					Fixed AG_BATTLE and AG_TAMING achievements (8df036c4)
+				
+				
+					Reduced MAX_MAP_SERVERS and MAX_SERVERS size (7e7a2831)
+				
+				
+					Ensure the mysql server host support full length domain (94324bc2)
+				
+				
+					Corrected script command logmes (c264d3e9)
+				
+				
+					Cleaned up instance script commands (21a5854c)
+				
+				
+					Corrected Enchant Arms status icon (ce1508a0)
+				
+				
+					Corrected checks for weapon attack calculation (d05c6035)
+				
+				
+					Corrected Cross Slash (53cedb72)
+				
+				
+					unitwarp npc (3d8c20f6)
+				
+			
+
+		
+			DATABASE:
+			
+
+					Fixed pre-renewal pet fullness values (1504507e)
+				
+				
+					Corrected Sword Stick equip requirements (b6e383b8)
+				
+				
+					Added Hanbok Bag item script (4a6a545a)
+				
+				
+					Added an item group for Token of Siegfried (53f50131)
+				
+				
+					Renewal hateffect update (79ba5aa9)
+				
+				
+					Fixed a SQL item database error (884043b7)
+				
+			
+
+		
+			SCRIPT:
+			
+
+					Little update in aldebaran.txt (85802872)
+				
+				
+					Added setpcblock to some official scripts (e172c436)
+				
+				
+					Corrected Gunslinger shops (7c0d9bf3)
+				
+				
+					Implemented (the old) Nightmarish Jitterbug instance (04c6303e)
+				
+				
+					Fixed Aigu's cutin (4d05e09e)
+				
+				
+					Updating official Kafra information from Rock Ridge (a3bd4c39)
+				
+				
+					Fix loop issue on Ice Cream Maker NPC (67e1583f)
+				
+			
+
+		
+			OTHERS:
+			
+
+					Fixed the upgrade script for pet evolution (ee2f4950)
+				
+			
+
+	
+
+		 
+	 
+
+	
+		List of Contributors:
+	 
+
+	
+		@aleos89, @Akkarinage, @Atemo, @attackjom, @cahya1992, @CairoLee, @daisyanne1380, @datleeroy, @ElinhoPP. @JohnnyPlayy, @kisuka, @Lemongrass3110, @Litro, @mazvi, @mrjnumber1, @Normynator, @RagnarokNova, @Rayvis, @sader1992, @teededung, @TokeiBuru, @userid0, @vykimo, @yashimwong
+	 
+
+	
+		 
+	 
+
+	
+		 Show your support to rAthena by submitting your Issue or Pull Requests!]]></description><pubDate>Sat, 04 May 2019 11:43:14 +0000</pubDate></item><item><title>February Digest 2019</title><link><![CDATA[https://rathena.org/board/topic/118420-february-digest-2019/?do=findComment&comment=358420]]></link><description>February Digest 2019 
+	The following digest covers the month of February 2019.
+ 
+
+
+	 
+ 
+
+
+	Staff Changes:
+ 
+
+
+		None&#xFEFF;&#xFEFF;
+	
+
+	Development Highlights:&#xFEFF;&#xFEFF;
+ 
+
+
+		CORE:
+
+		
+				Fixed a possible mail send server crash (2c47569f)
+			
+			
+				Fixed a possible pet server crash (dd084234)
+			
+			
+				Fixed a possible script exploit (25aaeec1, 8e325e41)
+			
+			
+				Added the battle_config limits (from pc_changelook) to changelook script command (b032aae3)
+			
+			
+				Added item bonus bNoWalkDelay (f235d89e)
+			
+			
+				Cleaned up script command argument parsing (1f97beae, 42b71e6f)
+			
+			
+				Fixed accessory equipping with cards (2ae2f25f)
+			
+			
+				Added gvg warning (92de3065)
+			
+			
+				Fixed Ice Wall units to match their official behavior (35611e78)
+			
+			
+				Converted remaining C comments (c5a5c545)
+			
+			
+				Corrected script commands containing arrays (d649ede4, 47866f60)
+			
+			
+				Fixed Camouflage skill (5d69a4fe)
+			
+			
+				Fixed an issue with progressbars (fc92a979)
+			
+			
+				Added correct allocation info to strlib (913cf875)
+			
+			
+				Fixed Taekwon Running fixed cast time (915c84f1)
+			
+			
+				Minor clean up in `clif_displaymessage` function (bfb6b831)
+			
+			
+				Corrected RODEX message size (7e649201)
+			
+			
+				Fixed definitions for DB pathing (a5c93b60)
+			
+			
+				Modified itemdb_read_flag error message (ec6c3698)
+			
+			
+				Fixed a duplicate path status (757a4593)
+			
+		
+	
+		DATABASE:
+		
+				Updated Item DB (727078a6)
+			
+			
+				Corrected some card combos (360cc25c)
+			
+			
+				Fixed some item scripts (6a522e72)
+			
+			
+				Corrected loyal pet bonuses (37772211)
+			
+			
+				Corrected item DB of Wurst (214573ed)
+			
+			
+				Updated Eddga's HP (4bf57de2)
+			
+		
+	
+		SCRIPT:
+		
+				Uncommented progressbar part in Devil tower (42920b27)
+			
+			
+				Adjusted death event for Emperium Battleground (724bd3bf)
+			
+		
+	
+		OTHERS:
+		
+				Added Epoque to mailmap (c80b8acf)
+			
+		
+
+	 
+ 
+
+
+	List of Contributors:
+ 
+
+
+	@aleos89, @AnnieRuru, @Atemo, @attackjom, @Badarosk0, @BrOgBr, @cahya1992, @c0nflicts, @Daegaladh, @Epoque1, @esu1214, @Everade, @exneval, @functor-x, @JohnnyPlayy, @keitenai, @Lemongrass3110, @marky291, @mrjnumber1, @Indigo000, @raelemagy, @teededung, @Tokeiburu, @zhqfdn
+ 
+
+
+	 
+ 
+
+
+	 Show your support to rAthena by submitting your Issue or Pull Requests!</description><pubDate>Mon, 04 Mar 2019 02:45:06 +0000</pubDate></item><item><title>December 2018 + January 2019 Digest</title><link><![CDATA[https://rathena.org/board/topic/118138-december-2018-january-2019-digest/?do=findComment&comment=357113]]></link><description>December Digest 2018 
+	The following digest covers the month of December 2018.
+ 
+
+
+	 
+ 
+
+
+	Staff Changes:
+ 
+
+
+		None&#xFEFF;
+	
+
+	Development Highlights:&#xFEFF;&#xFEFF;
+ 
+
+
+		CORE:
+
+		
+				Fixed possible string out of bounds in configurations (9dbd3cb)
+			
+			
+				Corrected White Imprison and reflected damage (40a4edc4)
+			
+			
+				Corrected vector issue (2f5e1203)
+			
+			
+				Fixed Renewal bBaseAtk readparam returning wrong value (32c68c73)
+			
+			
+				Fixed clearing of sp_vanish_race (4cff45b8)
+			
+			
+				Fixed missing login date for guild members (18f9574a)
+			
+			
+				Fixed Skill Damage Database parsing (2d4a5949)
+			
+			
+				Fixed pre-renewal atk (e8a7daec)
+			
+			
+				Fixed homunculus auto feed for broken luas (9183a54a)
+			
+			
+				Fixed SU_GROOMING while being frozen (7fa903ce)
+			
+			
+				Fixed CN Meteor and Lunatic Carrot Beat damage (faee0cde)
+			
+			
+				Fixed zero termination for bg messages (742232d5)
+			
+			
+				Corrected some Summoner skills (570c07d5)
+			
+			
+				Removed deprecated SI constants from src (e3dd6238)
+			
+			
+				Fixed wrong replacements of CD_CURRENT_ECONOMY (732059ac)
+			
+			
+				Unified infinite tick usage (016d15b7)
+			
+			
+				Corrected AutospellOnSkill (75aef6a5)
+			
+			
+				Fixed autobonus removal (fb81e2d7)
+			
+			
+				Switched supported client to Ragexe (ec3b7077)
+			
+			
+				Fixed unknown map in character select (1c987de7)
+			
+			
+				Added support for viewpointvalue command (49444912)
+			
+			
+				Corrected some statuses and Mado Gear interaction (0d816975)
+			
+			
+				Added support for 64bit ticks (01f61cfa, 46138645)
+			
+			
+				Added a missing check to TK_HIGHJUMP (63bfd611)
+			
+			
+				Fixed reloadmobdb status calculation (8e58f2ce)
+			
+			
+				Initial Release of Equipment Switch (818ff109, f5f377a7)
+			
+		
+	
+		DATABASE:
+		
+				Updated Lasagna Boss spawn (9f24814a)
+			
+			
+				Changed equippable jobs for some items in pre-re/item_db.txt (93cf1881)
+			
+			
+				Changed Thanatos gears to Thanos in item_db.txt (f5b546d6)
+			
+			
+				Corrected job mask of some items (818f35ab)
+			
+		
+	
+		SCRIPT:
+		
+				Ghost Palace instance NPC name fixes (b87a1758)
+			
+			
+				Fixed Taekwon Jobchanger Location (200b55e0)
+			
+		
+	
+		OTHERS:
+		
+				Fixed a documentation typo for bDropAddClass (9f880768)
+			
+			
+				Disabled iterator sanity checks on VS (7c271d7e)
+			
+			
+				Added epoll support on linux (eb2e40c3)
+			
+		
+
+	 
+	 
+
+		List of Contributors:
+	 
+
+
+
+	@4144, @admkakaroto, @aleos89, @Atemo, @AzarthMZintos, @Balferian, @Encon21, @Everade, @exneval, @Haikenz,  @laziem, @Lemongrass3310, @MathReaper, @mrjnumber1, @nubspixel, @Playtester, @RadianFord, @reunite-ro, @Rolfxx, @secretdataz, @teededung, @Tokeiburu, @vstumpf, @whupdo, @yoonjunho72, @zackdreaver
+ 
+
+
+	 
+ 
+
+
+	 
+ 
+
+
+	 
+ 
+
+
+	January Digest 2019 
+	The following digest covers the month of January 2019
+ 
+
+
+	 
+ 
+
+
+	Staff Changes:
+ 
+
+
+		None&#xFEFF;
+	
+
+	Development Highlights:&#xFEFF;&#xFEFF;
+ 
+
+
+		CORE:
+
+		
+				Fixed Full Blast delay on attack and using items (4ec0c010)
+			
+			
+				Corrected item bonus FixedCastRate (59593652)
+			
+			
+				Fixed Reflect Damage not reflecting damage (7282dd87)
+			
+			
+				Adjusted reload item database (444d7394)
+			
+			
+				Refactored achievement conditions (4706115d)
+			
+			
+				Fixed points command using negative numbers (6c1d1a84)
+			
+			
+				Fixed a few more leftovers from 64bit tick (a5fc39e0)
+			
+			
+				Corrected skills that give bonuses while sitting (b1865b31)
+			
+			
+				Fixed CDP not failing when haven't met the requirements (a9f868f8)
+			
+			
+				Corrected a few potential crash points (6c864927)
+			
+			
+				Fixed a crash from MVP Ladder Warper (db3267a8)
+			
+			
+				Updated Quagmire status removal list (626c2b7f)
+			
+			
+				Disconnect player on map-server switch failure (19eef173c)
+			
+			
+				Corrected status attack's element (298cfefd2)
+			
+		
+	
+		DATABASE:
+		
+				Corrected Honor Token weight (246dd2aa)
+			
+			
+				Corrected Faceworm Larva Card bonus (1d0a2238)
+			
+			
+				Corrected Cat Ear Beret bonus (6c6baff1)
+			
+			
+				Fixed Costume Pocketwatch Hair Ornament location (394b16b8)
+			
+			
+				Corrected Palace Guard Cap bonus (24c121b7)
+			
+			
+				Added missing Costume Flying Galapago (f49c68f7)
+			
+			
+				Fixed duration for items 12274 and 12275 (39906dac2)
+			
+			
+				Corrected Shadow Staff script error (8839fe95)
+			
+			
+				Corrected Owl Viscount Silk Hat script error (ec305337)
+			
+			
+				Fixed pre-re Barricade HP value (d5ca1c73)
+			
+			
+				Corrected Card/Enchant Combos (6bea2da3)
+			
+			
+				Item db update (9cd9cab2)
+			
+			
+				Update re/item_trade.txt based on itemmoveinfov5 (54b2cf32)
+			
+			
+				Corrected Sarah's Battle Robe bonus (9d272f8f)
+			
+			
+				Corrected Sling Item bonuses (fe12d6f0)
+			
+		
+	
+		SCRIPT:
+		
+				Added Clothing Effect Removal Service (8ed8fd1a)
+			
+			
+				Change Magic Gear Master NPC name to Mado Gear Armourer for Renter Merchants (02c69f64)
+			
+			
+				Added new Rebellion Shops (f3bb7e4b)
+			
+			
+				Fixed wrong exp values on 13.1 and 13.2 quests and other minor fixes (c96671fc)
+			
+			
+				Removed noicewall mapflag from several instance maps (79dffbd7)
+			
+			
+				Updated OnTouch Royal messenger NPC (53498865)
+			
+			
+				Updated NPC locations according client's navi file (b1b9720f)
+			
+			
+				Fixed variable typo in agit_main_se.txt (43b3bc08)
+			
+			
+				Fixed Hunting Missions (ad960e47)
+			
+		
+	
+		OTHERS:
+		
+				Allow increasing connection limit on linux (8ae788b6)
+			
+			
+				Add missing unit type documentation (de70e498)
+			
+			
+				Added MS support for the function macro (e415e642)
+			
+			
+				Changed skip into error (de8c707f)
+			
+		
+
+	 
+ 
+
+
+	List of Contributors:
+ 
+
+
+	@aleos89, @Angelic234, @Atemo, @attackjom, @Badarosk0, @Balferian, @bgamez23, @BrOgBr, @cydh, @Daegaladh, @danielbernard, @darhylism, @Everade, @Indigo000, @Kezzo, @laziem, @Lemongrass3110, @LunarSHINING, @mrjnumber1, @Normynator, @nubspixel, @RadianFord, @rAthenaCN, @sigtus, @teededung, @Tokeiburu, @zackdreaver</description><pubDate>Thu, 31 Jan 2019 21:19:46 +0000</pubDate></item><item><title>November Digest 2018</title><link><![CDATA[https://rathena.org/board/topic/117644-november-digest-2018/?do=findComment&comment=354852]]></link><description>November Digest 2018 
+			The following digest covers the month of November 2018.
+		 
+
+		
+			 
+		 
+
+		
+			Staff Changes:
+		 
+
+		
+				None&#xFEFF;
+			
+		
+			Development Highlights:&#xFEFF;&#xFEFF;
+		 
+
+		
+				CORE:
+
+				
+						Added multi level up level caps (a47e6cb4)
+					
+					
+						Updated the list of skills usable in Madogear (fd91ab62)
+					
+					
+						Implemented official buy/sell amount restrictions (e8c11624)
+					
+					
+						Added some additional guild loading checks (a4c8039c)
+					
+					
+						Corrected Ignition Break animation (78cda50e)
+					
+					
+						Corrected script command setunitdata HP/Max HP (404973f6)
+					
+					
+						Updated Hammer of God behavior (0c6b772d)
+					
+					
+						Corrected Reins of Mount interaction with hiding (24dca111)
+					
+					
+						Corrected Raid damage for renewal (a8f01ecc)
+					
+					
+						Corrected trap splash count (7cc44e55)
+					
+					
+						Corrected Fire Charm and Exploding Dragon damage (16c2f22f)
+					
+					
+						Fixed a potential crash on change map events (505a0cd8)
+					
+					
+						Resolved Small and Large Life Potion Healing (47d76205)
+					
+					
+						Corrected Absorb Spirit Sphere on self (eafb1cb7)
+					
+					
+						Refactored item bonuses to utilize C++ features (c71ef92f)
+					
+					
+						Added drop highlighting effect feature (bde580fd)
+					
+					
+						Fixed possible string out of bounds in configurations (bff89bd7)
+					
+					
+						Updated CN Meteor and Lunatic CB behavior (9758a38f)
+					
+					
+						Corrected Electric Shocker versus MVP (a0d10876)
+					
+					
+						Corrected White Imprison and reflected damage (e02e85b6)
+					
+					
+						Corrected a potential overflow in item bonuses (5cc368a1)
+					
+					
+						Corrected Stone Hard Skin Rune effects (0bb279b6)
+					
+					
+						Corrected possible item loss during char login (6a49dc2b)
+					
+				
+			
+				DATABASE:
+				
+						Corrected Platinum Shotel and Curved Sword (d9b00bd7)
+					
+					
+						Added Equipments/weapons from ep17.1 (795aa825)
+					
+					
+						Added Illusion of Labyrinth item DB (348acd18)
+					
+					
+						Added KRO items november-07-2018 (a8175337)
+					
+					
+						Added missing bracket for sql synchro (56f5333a)
+					
+				
+			
+				SCRIPT:
+				
+						Corrected atcommand reloadscript and NPC dialogs (a7d8fbae)
+					
+					
+						Added missing Phantasmagorika Spokesperson (5dbe3dba)
+					
+					
+						Prevent duplicate npc (dbf2f232)
+					
+					
+						Fixed a bug in Gaebolg Family Curse script (756ef38b)
+					
+				
+			
+				OTHERS:
+				
+						None
+					
+				
+		
+			Statistics:
+		 
+
+		
+				Excluding merges, 7 authors have pushed 48 commits to master and 75 commits to all branches.
+			
+			
+				On master, 104 files have changed and there have been 2,069 additions and 1,705 deletions.
+			
+			
+				50 Active Pull Requests
+			
+			
+				59 Active Issues
+			
+			
+				41 Merged Pull Requests
+			
+			
+				20 Proposed Pull Requests
+			
+			
+				9 Closed Issues
+			
+			
+				46 New Issues
+			
+		
+			List of Contributors:
+		 
+
+		
+			@admkakaroto, @aleos89, @Angelic234, @Asheraf, @Atemo, @Badarosk0, @Balferian, @crazystorm2017, @cydh, @dastgirp, @Everade, @exneval, @flamefury, @FriggRM, @Joao1905, @kukuasir1, @laziem, @lelouch22, @Lemongrass3110, @mrjnumber1, @Rytech2, @slyx88, @syracuase, @teededung, @Tokeiburu, @vykimo, @zackdreaver
+		 
+
+		
+			 
+		 
+
+		
+			 Show your support to rAthena by submitting your Issue or Pull Requests!</description><pubDate>Tue, 04 Dec 2018 03:51:37 +0000</pubDate></item><item><title>October Digest 2018</title><link><![CDATA[https://rathena.org/board/topic/117360-october-digest-2018/?do=findComment&comment=353485]]></link><description>October Digest 2018 
+		The following digest covers the month of October 2018.
+	 
+
+	
+		 
+	 
+
+	
+		Staff Changes:
+	 
+
+	
+			None&#xFEFF;
+		
+	
+		Development Highlights:&#xFEFF;
+	 
+
+	
+			CORE:
+
+			
+					Fixed ers_destroy called too early in do_final_instance (0f8ce367)
+				
+				
+					Fixed IM_NONE idle timer issue (7d8530e3)
+				
+				
+					Fixed instance map issue (e66dc4f6)
+				
+				
+					Added script command getunits (10e7035b)
+				
+				
+					Initial release of the guild storage log (55acdb986)
+				
+				
+					Changed the default packetver to 20180620 (8e7b9a57)
+				
+				
+					Cleanup skill_damage mapflag for skill (d8e760fa)
+				
+				
+					Fixed free purchase from cashshop NPC exploit (180938d9)
+				
+				
+					Corrected equipment stripping success rates (04f127fd)
+				
+				
+					Fixed potential map server crash in clif_parse_Mail_setattach (21407227)
+				
+				
+					Added skill_duration mapflag (84b4f098)
+				
+				
+					Updated Gunslinger/Rebellion Bullet behavior (87032fc9)
+				
+				
+					Fixed Water Evasion and Freezing Spear combo (af205a88)
+				
+				
+					Removed code duplication for Guild Skills (98ba5490)
+				
+			
+		
+			DATABASE:
+			
+					Corrected Solid Lunatic spawn amount at prt_fild08 (daebd300)
+				
+				
+					Updated item_buyingstore table (474cb7d9)
+				
+				
+					Corrected Repair and Shape Shift requirements (77ace906)
+				
+				
+					Corrected a SQL issue (5c031c73)
+				
+				
+					Added cards from ep14.3 (kRO 2018.09.21) (a31b34ba)
+				
+				
+					Renewal Monster updates (fe197bfa1, 5322c563, bcd419db)
+				
+				
+					Added items from kRO 20181002 (4c25aadf)
+				
+				
+					Added items from kRO 20160504 (5c891c53)
+				
+				
+					Corrected Airship_Boots item script (8cecb040)
+				
+				
+					Added missing mode for Nightmare Biolab monsters (a4fa8054)
+				
+				
+					Corrected an Imperial Set Combo (fece0abe)
+				
+				
+					Updated amount of items given from certain scroll boxes (b1200aa1)
+				
+				
+					Corrected some item combo bonus (edfaa546)
+				
+			
+		
+			SCRIPT:
+			
+					Initial release of Rock Ridge script (01a70999, 441e8f96)
+				
+				
+					Corrected some issues with Malaya Quests (2e9319af)
+				
+				
+					Updated Malangdo enchant weapon script (e2763068)
+				
+				
+					Initial implementation of Nightmare Biolab (33dcadda)
+				
+				
+					Updated NPCs in moro_vol map (0b18fe4b)
+				
+				
+					Initial release of Devil Tower memorial (58c520eb, efbb9fed)
+				
+				
+					Fixed some conditions in LV4 weapon quest (7066cac9)
+				
+			
+		
+			OTHERS:
+			
+					Corrected Guild Storage Log SQL file (8a504c69, 3b7fbb0d)
+				
+				
+					Miscellaneous documentation update (5e7cb8a8)
+				
+				
+					Adding LGTM to CI tools (c0793a80)
+				
+			
+	
+		Statistics:
+	 
+
+	
+			Excluding merges, 10 authors have pushed 71 commits to master and 120 commits to all branches.
+		
+		
+			On master, 117 files have changed and there have been 22,609 additions and 5,417 deletions.
+		
+		
+			59 Active Pull Requests
+		
+		
+			63 Active Issues
+		
+		
+			39 Merged Pull Requests
+		
+		
+			20 Proposed Pull Requests
+		
+		
+			32 Closed Issues
+		
+		
+			31 New Issues
+		
+	
+		List of Contributors:
+	 
+
+	
+		@admkakaroto, @aleos89, @anacondaqq, @Atemo, @attackjom, @AzarthMZintos, @Balferian, @cydh, @Everade, @exneval, @Indigo000, @JohnnyPlayy, @keitenai, @lelouch22, @Lemongrass3110, @mazvi, @officialwedevgames, @OptimusM, @Questune09, @sader1992, @secretdataz, @slyx88, @teededung, @vykimo, @zackdreaver
+	 
+
+	
+		 
+	 
+
+	
+		 Show your support to rAthena by submitting your Issue or Pull Requests!</description><pubDate>Fri, 02 Nov 2018 06:54:04 +0000</pubDate></item><item><title>September Digest 2018</title><link><![CDATA[https://rathena.org/board/topic/117107-september-digest-2018/?do=findComment&comment=352148]]></link><description>September Digest 2018 
+	The following digest covers the month of September 2018.
+ 
+
+
+	 
+ 
+
+
+	Staff Changes:
+ 
+
+
+		None
+	
+
+	Development Highlights:&#xFEFF;
+ 
+
+
+		CORE:
+
+		
+				Cleaned up map property functions (048de6c9)
+			
+			
+				Updated mob_drop parsing (386ee355)
+			
+			
+				Follow up to atcommand identifyall (d7d012c5)
+			
+			
+				Resolved Dynamic Mobs issue (618fc37e)
+			
+			
+				Implemented official ammo equip behavior (d3d8f3c5)
+			
+			
+				Corrected some weapon bonuses (d17ddf41)
+			
+			
+				Corrected a check for skill usage restrictions (e6e0511c)
+			
+			
+				Updated documentation typo error (3cd77173)
+			
+			
+				Cleaned up Banding behavior (0d773983)
+			
+			
+				EDP renewal change (a12f1ce0)
+			
+			
+				Cleaned up equipment stripping skills (f0dfdf92)
+			
+			
+				Corrected Critical bonuses (147e8da2)
+			
+			
+				Corrected Union of the Sun Moon and Stars HP cost (8fc79033)
+			
+			
+				Corrected Taekwon Mission mob generator (7040057a)
+			
+			
+				Updated Item Sell checks (3e1105b0)
+			
+		
+	
+		DATABASE:
+		
+				Updated default items's items script of attendance.yml (82171c58)
+			
+			
+				Corrected Kimi Possession combo set (71b8cbe1)
+			
+			
+				Implemented items from ep16_2 (kRO 2016.03.09 and 2017.06.21) (32b19904)
+			
+			
+				Updated map_msg_por.conf (c4cb25b6)
+			
+			
+				Updates inf3 in skill_db (b614092b)
+			
+		
+	
+		SCRIPT:
+		
+				Adjusted playtime check in Eden Quest script (ee6009ff)
+			
+			
+				Clean-up HTF instance and fixed a quest warning (9780b461)
+			
+			
+				Fixed some error and warning in the NPC sample folder (ca83d352)
+			
+			
+				Autopot script improvement (b7ba7fe5)
+			
+			
+				Changed "Royal Errand Boy" to "Royal Messenger" in quests_16_1.txt (f16fc6c5)
+			
+		
+	
+		OTHERS:
+		
+				Minor correction in documentation (7d546d37)
+			
+			
+				Corrected some GCC 7.1+ compile warnings (926e37cb)
+			
+		
+
+	Statistics:
+ 
+
+
+		Excluding merges, 9 authors have pushed 27 commits to master and 53 commits to all branches.
+	
+	
+		On master, 47 files have changed and there have been 1,416 additions and 672 deletions.
+	
+	
+		28 Active Pull Requests
+	
+	
+		49 Active Issues
+	
+	
+		19 Merged Pull Requests
+	
+	
+		9 Proposed Pull Requests
+	
+	
+		26 Closed Issues
+	
+	
+		23 New Issues
+	
+
+	List of Contributors:
+ 
+
+
+	@admkakaroto, @aleos89, @Atemo, @AzarthMZintos, @benching, @cydh, @Everade, @exneval, @JMahiro, @keitenai, @kukuasir, @laziem, @Lemongrass3110, @Litro, @mrjnumber1, @RadianFord, @sader1992, @secretdataz, @teededung, @Tokeiburu, @zackdreaver
+ 
+
+
+	 
+ 
+
+
+	 Show your support to rAthena by submitting your Issue or Pull Requests!</description><pubDate>Sun, 07 Oct 2018 23:58:22 +0000</pubDate></item><item><title>August Digest 2018</title><link><![CDATA[https://rathena.org/board/topic/116796-august-digest-2018/?do=findComment&comment=350789]]></link><description>August Digest 2018 
+	The following digest covers the month of August 2018.
+ 
+
+
+	 
+ 
+
+
+	Staff Changes:
+ 
+
+
+		None
+	
+
+	Development Highlights:&#xFEFF;
+ 
+
+
+		CORE:
+
+		
+				Cleaned up map storage type (48ae1a1e)
+			
+			
+				Cleaned up header guard names (2ab29807)
+			
+			
+				Updated Acid Terror damage modifier for renewal (c731465a)
+			
+			
+				Official Spiritual Sphere Absorption behavior (9ca000a4a)
+			
+			
+				Corrected SECURE_NPCTIMEOUT behavior (4befcf74)
+			
+			
+				Fixed string case in inarray command script (9cba66c2)
+			
+			
+				Implemented suggestion `checkwall` script command (3d8104d7)
+			
+			
+				Fixed a possible mapserver crash (ae89b3a7, ae7cb65a)
+			
+			
+				Added new quest info icons (f42696bf)
+			
+			
+				Fixed Insignia MATK (ef2bf5b0)
+			
+			
+				Corrected a compilation error (77301602)
+			
+			
+				Fixed Global instance timer issue (d8bcc912)
+			
+			
+				Implemented suggestion of `killedgid` (c856b07c)
+			
+			
+				Cleaned up map data checks (bde33e76)
+			
+			
+				Corrected a map server notification (e469f5fb, 5581da4b)
+			
+			
+				Corrected Blast Mine and Claymore Trap behavior (0f7f6639)
+			
+			
+				Corrected some map property issues (da83e617)
+			
+			
+				Corrected server info display (3569789a)
+			
+			
+				Implemented suggestion `identifyall` script command (fd4f7ccd)
+			
+			
+				Updated Arch Bishop skills from kRO maintenance (d699defa)
+			
+		
+	
+		DATABASE:
+		
+				Fixed some items and combos (f69d5d39)
+			
+			
+				Added IG_PRIVATE_AIRSHIP (83c8183a)
+			
+			
+				Added new item scripts from kRO 2017.05.10 update (2e133ed0)
+			
+			
+				Added card in monster's card slot for monster in Sarah and Fenrir instance (68d53c19)
+			
+			
+				Implemented new items from Illusion of Moon Light kRO 2016.12.27 (95b81cf5e)
+			
+			
+				Implemented new items from Illusion of Vampire kRO 2017.01.25 (0a8b17a1)
+			
+			
+				Implemented new items from Illusion of Frozen kRO 2017.02.21 (91f2b7cc)
+			
+			
+				Implemented new items from Illusion of Abyss kRO 2017.04.18 (9c27a5cd)
+			
+			
+				Implemented new items from Illusion of Teddy Bear kRO 2018.03.09 (24f6c5e9)
+			
+			
+				Implemented new items from Illusion of Luanda kRO 2018.04.18 (9c0010f3)
+			
+			
+				Implemented cards from Dreamy Shadow Instance and Royal Members Cards (87338504)
+			
+			
+				Corrected item ID on Illusion Hunter Bow + Hunting Arrow combo (440b243a)
+			
+			
+				Implemented cards from ep 17.1 kRO 2018.08.13 (555e0c69)
+			
+		
+	
+		SCRIPT:
+		
+				Fixed Wolfchev Lab prerequisite (5f5df82d)
+			
+			
+				Fixed wrong npc name for emotion in Malangdo (68fccf44)
+			
+			
+				Fixed no such NPC 'Sweet Married Couple#dew2' (7593ae52)
+			
+			
+				Corrected npc's name (fce5919b)
+			
+			
+				Update Renewal and Pre-renewal Morocc NPCs (91667a9a)
+			
+			
+				Added Lutie Kafra in renewal (0d4b3517)
+			
+			
+				Updated accessory enchants of ep16 according to kRO 2015.02.25 (8e51117a)
+			
+		
+	
+		OTHERS:
+		
+				Updated mapcache tool (a5af358b)
+			
+			
+				Corrected SQL upgrade format (b05ca3bc, 24de06c7)
+			
+		
+
+	Statistics:
+ 
+
+
+		Excluding merges, 11 authors have pushed 70 commits to master and 80 commits to all branches.
+	
+	
+		On master, 167 files have changed and there have been 2,199 additions and 1,281 deletions.
+	
+	
+		51 Active Pull Requests
+	
+	
+		60 Active Issues
+	
+	
+		42 Merged Pull Requests
+	
+	
+		9 Proposed Pull Requests
+	
+	
+		52 Closed Issues
+	
+	
+		8 New Issues
+	
+
+	List of Contributors:
+ 
+
+
+	@admkakaroto, @aleos89, @anacondaqq, @Atemo, @AzarthMZintos, @Balferian, @BrOgBr, @cydh, @ecdarreola, @elfring, @flamefury, @gustavobrigo, @Haikenz, @hendra814, @laziem, @lelouch22, @Lemongrass3110, @mazvi, @mrjnumber1, @redlightliu, @Rytech2, @sader1992, @secretdataz, @SnotraRM, @syracuase, @teededung, @Tokeiburu, @uddevil, @xTakami, @yoonjunho72, @zackdreaver, @zakudam
+ 
+
+
+	 
+ 
+
+
+	 Show your support to rAthena by submitting your Issue or Pull Requests!</description><pubDate>Tue, 04 Sep 2018 22:04:21 +0000</pubDate></item><item><title>July Digest 2018</title><link><![CDATA[https://rathena.org/board/topic/116486-july-digest-2018/?do=findComment&comment=349382]]></link><description>July Digest 2018 
+	The following digest covers the month of July 2018.
+ 
+
+
+	 
+ 
+
+
+	Staff Changes:
+ 
+
+
+		None
+	
+
+	Development Highlights:&#xFEFF;
+ 
+
+
+		CORE:
+
+		
+				Added a 'force' option to attachrid (b3643bfe4)
+			
+			
+				Fixed broken guild notices (b3a51eaa)
+			
+			
+				Fixed logging of #CASHPOINTS and #KAFRAPOINTS (ce9cbd2e)
+			
+			
+				Added possibility to log without attached player (3faf7004)
+			
+			
+				Added support for packet sending map data 0xAC5 (145b60f7)
+			
+			
+				Added Guild Storage Expansion Skill (e13ca63c)
+			
+			
+				Fixed a bug with warlock's spheres (cea5ad71)
+			
+			
+				Corrected SC_MTF_CRIDAMAGE bonus not triggering (6b148d5c)
+			
+			
+				Refactored roulette system (fe7c0a78)
+			
+			
+				Missing returns for inarray and countinarray (500cfdc4)
+			
+			
+				Added empty packet functions for private airship (74efc7d6)
+			
+			
+				Cleaned up Summer 2 code (b2c026d4)
+			
+			
+				Corrected some item bonuses not triggering (fdd24756)
+			
+			
+				Pets should mimic master's walk speed (042b8862)
+			
+			
+				Fixed Guild Storage Expansion skill saving (bfd7af34)
+			
+			
+				Replaced HID timer function parameters in a macro (c4d7dc76)
+			
+			
+				Freezing and Burning can occur at the same time (1a6bc209)
+			
+			
+				Negative MDEF should not increase damage taken from magic (030443c9)
+			
+			
+				Initial Release of Attendance Feature (a5588dd9)
+			
+			
+				Updated max recovery weight to 70% for renewal (b409936f)
+			
+			
+				Resolved Guild Storage Expansion not updating (bbe552d1)
+			
+			
+				Cleaned up the mapflag system (a942853d, 93139226)
+			
+			
+				Fixed missing curly braces in reloadscript (123303ef)
+			
+			
+				Fixing party death icon in newer clients (95c3aed8)
+			
+			
+				Fixed a bug with disable_items script command (6b3f0717)
+			
+			
+				Fixed EXP bug and added failsafe to family check functions (952ac43e)
+			
+			
+				Cleaned up map data storage (584fcac4)
+			
+			
+				Fixes channel command crash (3de9a44f)
+			
+			
+				Initial release of private airship system (8dea04a8)
+			
+			
+				Fixed walk_choices's type (a05ed6e8)
+			
+		
+	
+		DATABASE:
+		
+				Fixed incorrect drop_id in quests (1b72f727)
+			
+			
+				Updated Shield Spell behavior (d612788e)
+			
+			
+				Updated Axe Mastery behavior (20a72e0c)
+			
+			
+				Updated Masquerade effects (f2437f4a)
+			
+			
+				Adjusted Amistr's Defense behavior (3de58247)
+			
+			
+				Adjusted Shield Chain range (eeb01923)
+			
+			
+				Corrected TWO skills according to aegis datas (cd05eb15)
+			
+			
+				Update Airship Assault Monster stats (7717c1e6)
+			
+			
+				Corrected Spiritual Sphere Absorption and Cursed Circle interaction (4f97c749)
+			
+		
+	
+		SCRIPT:
+		
+				Fixed issue with Gunslinger Manual (e4eddc3e)
+			
+			
+				Fixed rate for HD material in shadow refiner npc (f9797109)
+			
+			
+				Added comments in custom quest_shop.txt (84299027)
+			
+			
+				Added extra npc checks (6e8599cd, 6b19b72d)
+			
+			
+				Corrected Archer Training bug (532e043)
+			
+			
+				Added Academy monster re-spawn (4db212bf)
+			
+			
+				Fixed quest warning in quests_amatsu.txt (12f62e63)
+			
+			
+				Implemented Banquet for Heroes ep 16.1 (7a8ac464)
+			
+			
+				Added extra nowarpto on some maps (f1f47091)
+			
+			
+				Fixed npc location for Lutie quest (58eadcda)
+			
+			
+				Fixed a mistake in 2008 headgear quest (fa4021d2)
+			
+		
+	
+		OTHERS:
+		
+				Updated travis script (a8b7476c)
+			
+			
+				Fixed a few compiler warnings on clang (91169d7e)
+			
+			
+				Update tools/config.pl (62ac5be4)
+			
+			
+				Added .editorconfig file to force editor settings for certain file types (3165e521)
+			
+		
+
+	Statistics:
+ 
+
+
+		Excluding merges, 11 authors have pushed 76 commits to master and 115 commits to all branches.
+	
+	
+		On master, 194 files have changed and there have been 28,777 additions and 7,054 deletions.
+	
+	
+		61 Active Pull Requests
+	
+	
+		66 Active Issues
+	
+	
+		51 Merged Pull Requests
+	
+	
+		10 Proposed Pull Requests
+	
+	
+		49 Closed Issues
+	
+	
+		17 New Issues
+	
+
+	List of Contributors:
+ 
+
+
+	@4144, @admkakaroto, @Akkarinage, @aleos89, @anacondaqq, @Atemo, @AzarthMZintos, @Balferian, @BrOgBr, @cydh, @Daniel4rt, @Daegaladh, @DavidPS92, @ecdarreola, @EthernalFriend, @Everade, @flamefury, @functor-x, @gladio78, @gustavobrigo, @Haikenz, @hendra814, @Kutikuti, @Lemongrass3110, @lRaikeNl, @MrLekkz, @nornane, @RadianFord, @Raf4h, @sader1992, @secretdataz, @spinzaku, @teededung, @tmav94, @uddevil, @V0rr, @vykimo, @yoonjunho72
+ 
+
+
+	 
+ 
+
+
+	 Show your support to rAthena by submitting your Issue or Pull Requests!</description><pubDate>Fri, 03 Aug 2018 06:42:52 +0000</pubDate></item><item><title>Mapflag System Refactor</title><link><![CDATA[https://rathena.org/board/topic/116336-mapflag-system-refactor/?do=findComment&comment=348792]]></link><description>Mapflag System Refactor 
+	As of Git Hash: a942853, rAthena Mapflag System has been refactored for the future!  Features:
+ 
+
+
+
+		Perhaps the biggest benefit to this update is how easy it is to add new mapflags.
+		
+
+				Adding a new boolean mapflag is as easy as defining a new enum value in the mapflag enum and creating a script constant! That's it!
+			
+			
+				More complex mapflags can be added to the setter with their own unique checks if required.
+			
+			
+				Everything is now consolidated to reduce redundancy that was all over the place which made adding new mapflags painful.
+			
+		
+
+	
+		There are now getter and setter functions source side when interacting with mapflags.
+	
+	
+		Renamed mapflag nosumstarmiracle to nosunmoonstarmiracle.
+	
+	
+		Some things that are somewhat minimal but help memory utilization:
+		
+
+				Mapflag pvp_nightmaredrop values are now stored as a vector.
+			
+			
+				Mapflag skill_damage values are now stored as a vector.
+			
+			
+				The global map index are now stored as a vector.
+			
+		
+
+
+
+	Thanks to @Lemongrass for a lot of help and @Secrets for tips!
+ 
+
+
+	Don't forget to leave comments and testing results! Thanks!</description><pubDate>Thu, 19 Jul 2018 00:16:10 +0000</pubDate></item><item><title>June Digest 2018</title><link><![CDATA[https://rathena.org/board/topic/116159-june-digest-2018/?do=findComment&comment=348033]]></link><description>June Digest 2018 
+	The following digest covers the month of June 2018.
+ 
+
+
+	 
+ 
+
+
+	Staff Changes:
+ 
+
+
+		@sader1992 is now a Content Moderator.
+	
+
+	Development Highlights:
+ 
+
+
+		CORE:
+
+		
+				Added new jRO hat effects (b2594f48)
+			
+			
+				Corrected Tarot Card dispelling Clan buffs (f4e8dee5)
+			
+			
+				Removed an extra semicolon typo (3a918fa4)
+			
+			
+				Initial support for Star Emperor and Soul Reaper (fc951469)
+			
+			
+				Moved common, config and mapcache to C++ (801d3ed9)
+			
+			
+				Updated Mado Gear effects (dc413a3c)
+			
+			
+				Resolved some compile issues (1ce3792a)
+			
+			
+				Fixed over refine bonus (105cc3ab)
+			
+			
+				Updated Freezing effects (5e9a23de)
+			
+			
+				Corrected Cloud Kill behavior (f3eab9dd)
+			
+			
+				Corrected Crystallized state effect (375f0ae4, 8e9f7a59)
+			
+			
+				Fixed MariaDB compilation problems (21cb1a22)
+			
+			
+				Synchronized source file headers (11b42569)
+			
+			
+				Fixed CMake on Windows (4633ab5c)
+			
+			
+				Fixed a map-server crash from getitem3 (23f7b945)
+			
+			
+				Added item random options into picklog (d5a815a6)
+			
+			
+				Cleaned up some hardcoded variables (880e227e)
+			
+			
+				Added clan name display (9a7e27b6)
+			
+			
+				Removed useless debug variables for an old issue (55f1b01b)
+			
+			
+				Fixed Silvervine Root Twist animation for players (796a67be)
+			
+			
+				Fixed compiler warnings in malloc.cpp on x86 (a4336fd8a)
+			
+			
+				Enable autobonus to be reactivated (e7fd6aa5)
+			
+		
+	
+		DATABASE:
+		
+				Added lhz_d_n2 and other missing maps, plus its mapflags (f025be5f, 87db2326)
+			
+			
+				Updated Achievement database (ef046159)
+			
+			
+				Fixed Goldsmith Dagger class equip requirement (879ef2af)
+			
+			
+				Fixed Chewy Ricecake and Oriental Pastry bonuses (f6758959)
+			
+			
+				Corrected Variable Cast Rate for Geffen Magic Robe in Renewal (00e518b2)
+			
+			
+				Fixed many items at Pre-RE and RE database (f7c62d28)
+			
+			
+				Added missing maps to map_cache (acebcd38)
+			
+			
+				Fixed Bloody_Roar and Bloody_Roar_C item scripts (e4a80565)
+			
+			
+				Corrected Devil Whisper Costume drops (a215ed97)
+			
+			
+				Corrected End Sektura bonus (4a64eb49)
+			
+			
+				Corrected Sightless Mind range (aef23561)
+			
+			
+				Fixed some accessory being refineable (380dde04, 9c50cd76)
+			
+			
+				Additionally removed refineable value from Dungeon_Ticket (18873555)
+			
+			
+				Fixed Drooping Pope and Imperial Spear item script (1c950627)
+			
+			
+				Fixed Bunker Shield item script (8c4be8db)
+			
+		
+	
+		SCRIPT:
+		
+				Initial release of Morse Cave instance (d388a712)
+			
+			
+				Added Old Glastheim Buffs (7c4d7692)
+			
+			
+				Added Hero Ring exchanger and Enchant NPCs (6c0da909, 967f28ed)
+			
+			
+				Updated custom mushroom script (006efe11)
+			
+			
+				Corrected spelling issues in Dewata Quests (f67b353a)
+			
+			
+				Corrected spelling and made name change in Rune Knight Job Change Quest (87913bcd)
+			
+			
+				Fixed a typo in guildcastles.txt (915c1562)
+			
+		
+	
+		OTHERS:
+		
+				Added Inkfish to mailmap (98e2cfd2)
+			
+			
+				Added Valaris to mailmap (85413183)
+			
+			
+				Added jTynne to mailmap (37330448)
+			
+			
+				Added a build test for GCC-8 (4044966e)
+			
+		
+
+	Statistics:
+ 
+
+
+		Excluding merges, 10 authors have pushed 72 commits to master and 131 commits to all branches.
+	
+	
+		On master, 336 files have changed and there have been 5,878 additions and 10,015 deletions.
+	
+	
+		55 Active Pull Requests
+	
+	
+		60 Active Issues
+	
+	
+		40 Merged Pull Requests
+	
+	
+		15 Proposed Pull Requests
+	
+	
+		48 Closed Issues
+	
+	
+		12 New Issues
+	
+
+	List of Contributors:
+ 
+
+
+	@aleos89, @Atemo, @Balferian, @bentheexo, @BrOgBr, @cahya1992, @crazystorm2017, @cydh, @danielbernard, @ecdarreola, @Everade, @exneval @Felleonel, @flamefury, @Haikenz, @laziem, @Lemongrass3110, @mazvi, @mrjnumber1, @Questune09, @Raf4h, @redlightliu, @Rytech2, @secretdataz, @teededung, @zackdreaver
+ 
+
+
+	 
+ 
+
+
+	 Show your support to rAthena by submitting your Issue or Pull Requests!  By providing enough useful info (Git Hash, Client Date, RE/Pre-RE, crashdump, how to reproduce, etc) you will help us to solve the issues faster</description><pubDate>Sun, 01 Jul 2018 12:02:50 +0000</pubDate></item><item><title>May Digest 2018</title><link><![CDATA[https://rathena.org/board/topic/115917-may-digest-2018/?do=findComment&comment=346987]]></link><description>May Digest 2018 
+	The following digest covers the month of May 2018.
+ 
+
+
+	 
+ 
+
+
+	Staff Changes:
+ 
+
+
+		@TheDerpySupport is now a Forum Moderator.
+	
+
+	Development Highlights:
+ 
+
+
+		CORE:
+
+		
+				Updated missing Effect State (5d2a3e43, c68da31f)
+			
+			
+				Added missing flag for 'mail' script command (953f7cf4)
+			
+			
+				Added new hateffect HAT_EF_C_BLESSINGS_OF_SOUL (34adde76)
+			
+			
+				Fixed UF_RANGEDSINGLEUNIT skill interactions (14f6ce4c2)
+			
+			
+				Added atcommand for limited sale (ce324ad1)
+			
+			
+				Added a template function for std::map search (0a845422)
+			
+			
+				Corrected skills that lose mob targets (53d70b3e)
+			
+			
+				Fixed login mail notification (6d5ee676)
+			
+			
+				Cleaned up item broadcast code (12c01b0b)
+			
+			
+				Corrected reflected damage applying twice (c4eae4b3)
+			
+			
+				Added an option to disable homun autofeed notify (3e269ace)
+			
+			
+				Fixed an invalid declaration of cached events (09fd14c4)
+			
+			
+				Fixed a few hardcoded limits in status.cpp (bfe62669)
+			
+			
+				Added support for changedress command (d16e7e61)
+			
+			
+				Corrected QD Shot and Crimson Marker interaction (1d1a179b)
+			
+			
+				Corrected Invisibility CRI bonus (42c33756)
+			
+			
+				Corrected refine bonus when importing (d060ff79)
+			
+			
+				Fixed client blocking mail deletion (82025555)
+			
+			
+				Fixed a possible crash (ecbab964)
+			
+			
+				Added a new script command 'inarray' (151c8476)
+			
+			
+				Added 2 new parameters for getpetinfo (dd60f4c4)
+			
+			
+				Corrected B.S. Sacramenti behavior (9d176c9f)
+			
+		
+	
+		DATABASE:
+		
+				Updated Bullet Cartridges (26c02e9a)
+			
+			
+				Corrected Demonic Fire and FE Acid behavior (7f8b9c43)
+			
+			
+				Added Excellion Armor and Wing (39f7ae13)
+			
+			
+				Added blueprints for Excellion enchants (6d351fa2)
+			
+			
+				Corrected Baby Dragon hat bonus (a2b6cb69)
+			
+			
+				Added Gambler Seal and Gambler Card item combo (a80d9c6d)
+			
+			
+				Fixed a few items having getrefine in script (8d76d349)
+			
+			
+				Changing bAtkRate to bAddClass,Class_All (e0678159)
+			
+			
+				Added missing Imperial Set Combos (87e7e889, 6c64fc95)
+			
+			
+				Moved remaining refine NPC to the database (a12c79f7)
+			
+			
+				Corrected item type for Biscuit Sticks to usable item (36c15d15)
+			
+		
+	
+		SCRIPT:
+		
+				Fixed wrong Quest ID in Monthly Brigan quest (b0aa1f87)
+			
+			
+				Cleaned up and fixed quest issue of hunter.txt (df9bac9b)
+			
+			
+				Removed City Cleaners from RE monster spawn files (8dc049aa)
+			
+			
+				Removed duplicates and added some missing mapflags (8aa6e8d2)
+			
+			
+				Added missing quests parameters (a381d333)
+			
+			
+				Added extra check in some renewal instances (394fb8ac)
+			
+			
+				Corrected Mora NPC name (fb951d2b)
+			
+			
+				Initial release of Instance Airship Assault (c1c308a1, d2b5222d)
+			
+		
+	
+		OTHERS:
+		
+				Updated Readme.md (8d638b9f)
+			
+			
+				Removed old visual studio projects from gitignore (923199d4)
+			
+			
+				Updated packet documentation (a8fd92c6)
+			
+		
+
+	Statistics:
+ 
+
+
+		Excluding merges, 11 authors have pushed 61 commits to master and 83 commits to all branches.
+	
+	
+		On master, 83 files have changed and there have been 3,338 additions and 1,049 deletions.
+	
+	
+		48 Active Pull Requests
+	
+	
+		69 Active Issues
+	
+	
+		39 Merged Pull Requests
+	
+	
+		9 Proposed Pull Requests
+	
+	
+		45 Closed Issues
+	
+	
+		24 New Issues
+	
+
+	List of Contributors:
+ 
+
+
+	@admkakaroto, @aleos89, @Akkarinage, @anacondaqq, @Atemo, @AzarthMZintos, @Badarosk0, @BrOgBr, @cydh, @Daegaladh, @Daniel4rt, @Everade, @exneval, @flamefury, @haikenz, @hurtsky @ignizh, @ilovelemon, @iubantot, @jamon18, @Jeybla, @kraaijmakers, @Lemongrass3110, @LolyAll, @mazvi, @MrAntares, @Questune09, @redlightliu, @rye305, @sader1992, @sctnightcore, @Secret, @secretdataz, @teededung, @uddevil
+ 
+
+
+	 
+ 
+
+
+	 Show your support to rAthena by submitting your Issue or Pull Requests!  By providing enough useful info (Git Hash, Client Date, RE/Pre-RE, crashdump, how to reproduce, etc) you will help us to solve the issues faster</description><pubDate>Tue, 05 Jun 2018 06:23:15 +0000</pubDate></item><item><title>April Digest 2018</title><link><![CDATA[https://rathena.org/board/topic/115562-april-digest-2018/?do=findComment&comment=345516]]></link><description>April Digest 2018 
+	The following digest covers the month of April, 2018.
+ 
+
+
+	 
+ 
+
+
+	Staff Changes:
+ 
+
+
+
+		@Nitrous is now a developer.
+	
+	
+		@tr0n returns to his International Moderator position for the German section.
+	
+	
+		@Azura Skyy, @crazyarashi, @Z3R0 and @Promise have left the Moderator teams.
+	
+
+
+	Development Highlights:
+ 
+
+
+
+		CORE:
+
+		
+
+				Dropped an unused declaration (170da178)
+			
+			
+				Added Random Option item data to getinventorylist (f07a1c4b)
+			
+			
+				Fixed error in getinventorylist (1390930c)
+			
+			
+				Added support for homunculus autofeeding (aff70f64)
+			
+			
+				Added a config for disabling novice/summoner character creation (aab5d549)
+			
+			
+				Adjusted Madogear interaction with skills (1efd7b5e)
+			
+			
+				Fixed a compile warning from homunculus autofeed (7901c1b2)
+			
+			
+				Corrected a potential integer overflow (1d539c3e)
+			
+			
+				Applied MHP limit based on bLv (7f2c6cf2)
+			
+			
+				Corrected item_db script curly parsing (ec1470b6)
+			
+			
+				Fixed a bug with MAX_ITEM_RDM_OPT (f948b9a6)
+			
+			
+				Updated getunitdata / setunitdata (cdae404e)
+			
+			
+				Resolved storage saving on server crash (8893ef1c)
+			
+			
+				Removed a stack push from getvar (25f2626c)
+			
+			
+				Made the second parameter for bonus script command optional (07e2bf09, cc63bb59)
+			
+			
+				Fixed default mob AI spawn (3b385d95)
+			
+			
+				Changed SI_ enum to the official EFST_ enum (d13d6a6e, 55bf142a)
+			
+			
+				Fixed a few problems with homunculus autofeed (2c68db9f)
+			
+			
+				Added ZC_NPCACK_SERVERMOVE2 (aaffbaaa)
+			
+			
+				Updated item_group_db column requirements (01846710, 4ffb1b04)
+			
+			
+				Added support for missing 2018 clients (8c7cd293)
+			
+		
+
+	
+		DATABASE:
+		
+
+				Updated Item DB: Muscle Fool, Biscuit Stick, Hunting Arrow, Akaraje, Fidelity Necklace, Hero Judgement Shawl, Hero Target Suit, White Slim Potion Box (e96807cc, 71bf8cc8, 963d9b04, 72c0f9c8, e23f06d6, e7ccee76, fac4d9be)
+			
+			
+				Updated Shadow Chaser skills (e509930a)
+			
+			
+				Added new items, some fixes and missing duplicates (7a361690)
+			
+			
+				Added Phantasmagorika mobskill placeholder (05dd7b31)
+			
+			
+				Updated Mob and NPC identity (33e36809, ae65e2e2, 94e68930)
+			
+			
+				Corrected some shadow equipment (33960fef)
+			
+		
+
+	
+		SCRIPT:
+		
+
+				Fixed a few typos and language mistakes (fdc48770)
+			
+			
+				Fixed typos in Phantasmagorika quests (dca8cc60)
+			
+			
+				Cleaned up custom battleground scripts (e2b9e42b)
+			
+			
+				Corrected a NPC name in academy.txt (aee83557)
+			
+			
+				Initial release of instance Isle Bios (5a0b72a7)
+			
+			
+				Fixed Regenschirm Guard Laboratory Permit issue (3a8814ac)
+			
+			
+				Added missing getpartymember calls in MVP ladder script (258069da)
+			
+		
+
+	
+		OTHERS:
+		
+
+				Added mailmap file to coalesce together commits (872eb00c)
+			
+			
+				Updated Item Bonus documentation (c4d3f0fd)
+			
+		
+
+
+
+	Statistics:
+ 
+
+
+
+		Excluding merges, 14 authors have pushed 68 commits to master and 93 commits to all branches.
+	
+	
+		On master, 125 files have changed and there have been 7,752 additions and 3,866 deletions.
+	
+	
+		43 Active Pull Requests
+	
+	
+		65 Active Issues
+	
+	
+		37 Merged Pull Requests
+	
+	
+		6 Proposed Pull Requests
+	
+	
+		44 Closed Issues
+	
+	
+		21 New Issues
+	
+
+
+	List of Contributors:
+ 
+
+
+	@aleos89, @Akkarinage, @Angelic234, @AnnieRuru, @arby89, @Atemo, @BrOgBr, @crazystorm2017, @cydh, @ecdarreola, @Encon21, @Everade, @flamefury, @gegewu85, @iubantot, @juanfus, @kisuka, @Lemongrass3110, @llchrisll, @mrdiablo, @RadianFord, @sader1992, @secretdataz, @syracuase, @talesofragnarok, @teededung, @Valacobino, @vstumpf, @Yuchinin, @zackdreaver
+ 
+
+
+	 
+ 
+
+
+	 Show your support to rAthena by submitting your Issue or Pull Requests!  By providing enough useful info (Git Hash, Client Date, RE/Pre-RE, crashdump, how to reproduce, etc) you will help us to solve the issues faster</description><pubDate>Tue, 01 May 2018 09:32:55 +0000</pubDate></item><item><title>February Digest 2018</title><link><![CDATA[https://rathena.org/board/topic/114871-february-digest-2018/?do=findComment&comment=342698]]></link><description>February Digest 2018 The following digest covers the month of February, 2018.
+						 
+
+						
+							 
+						 
+
+						
+							Staff Changes
+						 
+
+						
+								Daegaladh is now a developer.
+							
+						
+							Development Highlights
+						 
+
+						
+								CORE:
+
+								
+										Added support for 2018-01-24 client (8792960d)
+									
+									
+										Fixed a bug with pincode on 2018-01-24 client (9d4fa62e)
+									
+									
+										Added support for 2018-02-07bRagexeRE client (e1b9d243)
+									
+									
+										Removed password output from atcommand accinfo (2746e0d3)
+									
+									
+										Made mercenary db dynamic (132feeb6)
+									
+									
+										Added new script command `clear` (ead017b3)
+									
+									
+										Fixed compatibility with some newer MySQL client library derivatives (dfe279fb)
+									
+									
+										Corrected renewal ASPD off-hand calculation (267fd3e6, b7d38283, 6411a1d4)
+									
+									
+										Set max Zeny to 2,147,483,647 (eaf44078)
+									
+									
+										Fixed item creation with full inventory (3c41d4ee)
+									
+									
+										Changing DBMap into STL::Map in C++ for guild storage (fe575dda)
+									
+									
+										Cleaned up atcommand accinfo leftovers (d4c1a57f)
+									
+									
+										Fixed display of newly added pet eggs in storage (c16b7b17)
+									
+									
+										Converted pet_data::petDB into a getter function (1e766a7b)
+									
+									
+										Added support for 2018-02-13aRagexeRE client (f6e0a0a3)
+									
+									
+										Added a new packet for the equipment swap system (71886193)
+									
+									
+										Fixed unitwalkto calls in unit walk events (a0a55dad)
+									
+									
+										Resolved renewal ASPD and two-handed weapons (31e2871d)
+									
+								
+							
+								DATABASE:
+								
+										Corrected True Seyren Windsor Card bonus (24a9e4c6)
+									
+									
+										Corrected the party member ATK bonus of RK_FIGHTINGSPIRIT (82035609)
+									
+									
+										Added new mob placeholders (eea76c8e)
+									
+									
+										Corrected chance to craft 2 runes starts at Rune Mastery Lv5, not 6 (8258df64)
+									
+									
+										Corrected Heat Barrel bonuses (75a8f520)
+									
+									
+										More items correction (In general Equips) and added new item 1835 (41dbb30f)
+									
+									
+										Fixed some autobonus scripts in item_db (cacf450d)
+									
+									
+										Fixed AL_HOLYWATER behavior (2ecb30ab)
+									
+									
+										Updated Cultivation plant spawn formula (a40b1da4)
+									
+									
+										Updated Masquerade - Weakness behavior (d2c5ca99)
+									
+									
+										Fixed Mystical Amplification and Chain Lightning (02983c4f)
+									
+									
+										Corrected missing ATK / MATK bonus from Old Wind Whisper (77f75c05)
+									
+									
+										Corrected the amount of slots of Spartacus (4fef4d04)
+									
+									
+										Updated guild skill Guard Up (6e5de84a)
+									
+									
+										Updated Tiger Fist stop duration (0e23f3fe)
+									
+									
+										Removed unnecessary RC_PLAYER item bonuses (d3ea313b)
+									
+									
+										Added items of Reactors from Charleston Instance (7bb35d28)
+									
+									
+										Fixed STR/INT/VIT Biscuit Sticks item script (97c1e8b9)
+									
+									
+										Cart Termination should be affected by % effects (5998cca3)
+									
+									
+										Fixed Endow skills to match official behavior (1e2032cc)
+									
+									
+										Corrected Disarm and Steal Coin formulas (5e354494)
+									
+									
+										Updated Mob and NPC Identity (e9919620)
+									
+									
+										Corrected Power Swing weapon requirement (fdb7aefd)
+									
+									
+										Fixed Skin Tempering (BS_SKINTEMPER) fire resistance percentage (a40b69f3)
+									
+									
+										Fixed Sheltering Bliss (CG_MOONLIT) max level (b989844f)
+									
+								
+							
+								SCRIPT:
+								
+										Cleaned up kafra functions (139f6f25)
+									
+									
+										Workaround to solve issue with news cards in enchants NPCs (3bcb37bf)
+									
+									
+										Updated card seller NPC (afab80fb)
+									
+									
+										Initial release of Dimensional Travel Quest (6e0187bc)
+									
+								
+							
+								OTHERS:
+								
+										Updated CI tool configurations (2f358d8f)
+									
+									
+										Fixed charban example in atcommands.txt (e43f03ad)
+									
+									
+										Fixed athena-start newlines not set to unix type (7f9f185c)
+									
+									
+										Added map_msg_mal.conf (38a00aa5)
+									
+								
+						
+							Statistics
+						 
+
+						
+								Excluding merges, 13 authors have pushed 66 commits to master and 87 commits to all branches.
+							
+							
+								On master, 79 files have changed.
+							
+							
+								There have been 2,825 additions and 764 deletions.
+							
+							
+								There are 42 merged Pull Requests and 7 Proposed Pull Requests.
+							
+							
+								There are 13 new Issues and 40 Closed Issues.
+							
+						
+							List of Contributors
+						 
+
+						
+								@4144, @admkakaroto, @aleos89, @Artuvazro, @Atemo, @ArcherDs, @Badarosk0, @BrOgBr, @cydh, @Daegaladh, @ecdarreola, @Everade, @flamefury, @hendra814, @laziem, @Lemongrass3110, @inhyositsu, @mrjnumber1, @RadianFord, @raynra, @rye305, @sader1992, @sctnightcore, @secretdataz, @talesofragnarok, @Tokeiburu, @uddevil, @vstumpf
+							
+						
+							Show your support to rAthena by submitting your Issue or Pull Requests!  By providing enough useful info (Git Hash, Client Date, RE/Pre-RE, crashdump, how to reproduce, etc) you will help us to solve the issues faster</description><pubDate>Sat, 03 Mar 2018 19:25:21 +0000</pubDate></item><item><title>January Digest 2018</title><link><![CDATA[https://rathena.org/board/topic/114475-january-digest-2018/?do=findComment&comment=341376]]></link><description>January Digest 2018 The following digest covers the month of January, 2018.
+					 
+
+					
+						 
+					 
+
+					
+						Staff Changes
+					 
+
+					
+							None.
+						
+					
+						Development Highlights
+					 
+
+					
+							CORE:
+
+							
+									Turned pet db into a dynamic map (fb966a12)
+								
+								
+									Updated Item Group features (32950ece)
+								
+								
+									Implemented getequiptradability script command (bfb6972c)
+								
+								
+									Fixed a wrong fifohead allocation (c4bfe0b1)
+								
+								
+									Merged two similar conditions on mapchange (6f01321b)
+								
+								
+									Fixed typo in atcommand.cpp (a6818eb5)
+								
+								
+									Fixed space allocation for new castle data (48d79cef)
+								
+								
+									Added RagexeRE support until 2018-01-03 (7a0f3d0e)
+								
+								
+									Fixed a minor typo in client.conf's comment (0ccf309c)
+								
+								
+									Updated Spanish message conf (e9bb1064)
+								
+								
+									Added support for 2018-01-17aRagexeRE (c4a57c57)
+								
+								
+									Cleaned up whisper code between map-servers (3a8c8a9d)
+								
+								
+									Fixed mapserver crash on script command warp (bb0dd7b8)
+								
+								
+									Fixed a problem with instance_db import (ec59e955)
+								
+								
+									Fixed required weapon messages (de9b4efd)
+								
+								
+									Fixed minor style typo in clif_obfuscation.hpp (db4e9b25)
+								
+							
+						
+							DATABASE:
+							
+									Updated Item DB (8e45966c, 19e712c8)
+								
+								
+									Added new mob placeholders and npc ids (8c53679a, dea92eef)
+								
+								
+									Corrected Cannibalize behavior (15b6d5cc)
+								
+								
+									Fixed SQL sync (f02cde4e)
+								
+								
+									Implemented item "Lunar Rainbow" (ad53dba4)
+								
+								
+									Fixed Badge Of Order Grace missing bonus (a524e39a)
+								
+								
+									Corrected MATK bonus in the item 'Infinity Dagger' (5e0d3e54)
+								
+								
+									Corrected Reverberation behavior (2e90136d)
+								
+								
+									Fixes missing item view on Lapine Shield and White Gold Shield (d04d307e)
+								
+								
+									Corrected Old Glast Heim items (805114c3)
+								
+								
+									Corrected Strawberry Decoration sets (8616332f)
+								
+								
+									Added combos for Legionaire Helm (a8976dd2)
+								
+								
+									Corrected 'Reborn in Valhalla' achievement (fe9f1ace)
+								
+								
+									Fixed Amdarias' Vampire Gift cast rate (585f419e)
+								
+								
+									Cleaned up Miracle damage bonus (f2c73848)
+								
+								
+									Implemented heroes trail cards (1a560dd0)
+								
+								
+									Updates Rolling Cutter counter behavior (4171cd18)
+								
+							
+						
+							SCRIPT:
+							
+									Updated twintowers.txt (d5c6c6d3)
+								
+								
+									Updated Old Glast Heim instance (c04c2e7e)
+								
+								
+									Fixed a typo in 2008's Christmas event (de50a5e3)
+								
+								
+									Added a missing warp in paradise.txt (1f7ceabb)
+								
+								
+									Fixed F_SexMes call (a65e7dbf)
+								
+								
+									Fixed a few name typos with Niflheim (16780638)
+								
+								
+									Fixed sleep error in Geffen Magic Tournament (31bd28df)
+								
+								
+									Fixed Job Level check for Blacksmith and Alchemist quest (8530a7b1)
+								
+							
+						
+							OTHERS:
+							
+									Changed forking reference link (31988abd)
+								
+							
+					
+						Statistics
+					 
+
+					
+							Excluding merges, 14 authors have pushed 56 commits to master and 85 commits to all branches.
+						
+						
+							On master, 82 files have changed.
+						
+						
+							There have been 18,165 additions and 2,208 deletions.
+						
+						
+							There are 26 merged Pull Requests and 16 Proposed Pull Requests.
+						
+						
+							There are 26 new Issues and 43 Closed Issues.
+						
+					
+						List of Contributors
+					 
+
+					
+							@4144, @admkakaroto, @aleos89, @anacondaqq, @Artuvazro, @Atemo, @AzarthMZintos, @BrOgBr, @cydh, @Daegaladh, @Dakado, @ecdarreola, @Everade, @exneval, @Haikenz, @im-mi, @insanchen, @jenkijo, @Jeybla, @Lemongrass3110, @lighta, @luan122, @LunarSHINING, @MrAntares, @rofasindo, @sader1992, @sctnightcore, @secretdataz, @srhmike, @syracuase, @technoken, @uddevil, @Valorro, @win4517, @zackdreaver
+						
+					
+						Show your support to rAthena by submitting your Issue or Pull Requests!  By providing enough useful info (Git Hash, Client Date, RE/Pre-RE, crashdump, how to reproduce, etc) you will help us to solve the issues faster</description><pubDate>Sat, 03 Feb 2018 02:56:41 +0000</pubDate></item><item><title>December Digest 2017</title><link><![CDATA[https://rathena.org/board/topic/114079-december-digest-2017/?do=findComment&comment=339573]]></link><description><![CDATA[December Digest 2017 The following digest covers the month of December, 2017.
+				 
+
+				
+					 
+				 
+
+				
+					Staff Changes
+				 
+
+				
+						None.
+					
+				
+					Development Highlights
+				 
+
+				
+						CORE:
+
+						
+								Added support for custom constant import (7c1a8827)
+							
+							
+								Fixed an issue with invisible item shops (f7bc3bca)
+							
+							
+								Fixed title selection in UI window (4dde4c66)
+							
+							
+								Fixed atcommand where parsing (c5b7850a)
+							
+							
+								Fixed script commands for Item Option (1e1bd71e)
+							
+							
+								Refactorized status_change_timer (00d8ace8, d08bc1ce)
+							
+							
+								Adjusted script command sc_end_class to accept an optional job ID (1b68303f)
+							
+							
+								Added November and December clients (15e509fe)
+							
+							
+								Fixed character variable lengths and char-server (7a1a76a9, 88e48ed6)
+							
+							
+								Resolved some miscellaneous typos (1ae1e312)
+							
+							
+								Prevents accessing a nullpointer from a non existant mob when using mobsearch (a0c8961e)
+							
+							
+								Fixed a crash caused by setquest in login events (6e7e97ca)
+							
+							
+								Corrected mapcache build (eb8f33e4)
+							
+							
+								Updated Pet catching values (9315781a)
+							
+							
+								Exported the pet catch constant (d4436769)
+							
+							
+								Switched mob db searches to find (65771a8e)
+							
+							
+								Fixed a bug with Neutral Barrier and duel atcommand (5ad35eb6)
+							
+							
+								Relocated restricted equip failure check (5e2dd2af)
+							
+							
+								Cleaned up renewal ASPD calculations (ae69e506)
+							
+							
+								Optimized dynamic memory allocation for duel atcommand (716f6c0f, e385e167)
+							
+							
+								Updated pet script command (d19ba918)
+							
+							
+								Added Rune Knight to atcommand bodystyle (1f0ea81d, 5602bb04)
+							
+						
+					
+						DATABASE:
+						
+								Corrected Magical Ring bonus (b00f3bcf)
+							
+							
+								Corrected Gray and Thanatos equipment sets (da152c6f)
+							
+							
+								Corrected some item bonuses (37b95826)
+							
+							
+								Corrected Item ID 14677 (Limited Power Booster) (f639c001)
+							
+							
+								Corrected Celine Kimi Card (5531fef9)
+							
+							
+								Updated Sorcerer Insignia Skills (0f33de9b)
+							
+							
+								Fixed Giant Growth &amp; Crush Strike damage bonus (ab1fa803)
+							
+							
+								Corrected Hervor (Item ID 2181) (346fcef5)
+							
+							
+								Corrected Chain Lightning behavior (947875d2)
+							
+							
+								Corrected Drooping Pope (758e319d)
+							
+							
+								Resolved enchants not executing unequip script (b3e67d21)
+							
+							
+								Corrected Snowman Hat, Holy Mom Love, Event Xmas Cake item script (fa35e8b9)
+							
+							
+								Corrected Adventurer Pack (13721c10)
+							
+							
+								Corrected Supplement Part Dex (4302fe64)
+							
+							
+								Removed Duplicate Entries in Renewal Quest DB (b4ce1e3d)
+							
+							
+								Corrected Evil Marcher Hat (84085d7e)
+							
+						
+					
+						SCRIPT:
+						
+								Updated Megingard Seal Quest (bb4a88a3)
+							
+							
+								Fixed wrong npc name in npc/events/xmas.txt (336a475d)
+							
+						
+					
+						OTHERS:
+						
+								Disabled root/admin user check for build bots (812e3a9a)
+							
+							
+								Added the custom and test scripts to the buildbot (b3cfd122)
+							
+							
+								Added support for windows admin detection (f59298ad)
+							
+							
+								Add few test to travis and appveyor (53db435, 0fa57e2b)
+							
+							
+								Corrected the Windows runserver script (34a905df)
+							
+							
+								Introduced utilities to gradually replace utils (fd8e1fe2)
+							
+							
+								Added /src/config/packet.h clarification (6afc3625)
+							
+							
+								Updated status change documentation (7113743c)
+							
+							
+								Updated script command npcskill documentation (33bfe1d2)
+							
+							
+								Fixed a compilation warning on winapi.cpp (b9981b2e)
+							
+							
+								Fixes potential map server crashes (5a80f29b)
+							
+							
+								Resolved a compile error (e88785b1)
+							
+						
+				
+					Statistics
+				 
+
+				
+						Excluding merges, 13 authors have pushed 63 commits to master and 86 commits to all branches.
+					
+					
+						On master, 81 files have changed.
+					
+					
+						There have been 1,772 additions and 823 deletions.
+					
+					
+						There are 42 merged Pull Requests and 7 Proposed Pull Requests.
+					
+					
+						There are 16 new Issues and 47 Closed Issues.
+					
+				
+					List of Contributors
+				 
+
+				
+						@4144, @admkakaroto, @aleos89, @anacondaqq, @Atemo, @AthenaStudioz, @Badarosk0, @cydh, @Everade, @exneval, @flamefury, @gusjungsza, @hnomkeng, @hurtsky, @ignizh, @Jeybla, @keitenai, @Lemongrass3110, @lighta, @Lilori, @mazvi, @mrjnumber, @MuzTank, @Paoly28, @Questune09, @rAthenaCN, @reymarbc, @sader1992, @secretdataz, @Sweet520, @syracuase, @Tokeiburu, @uddevil, @Vennren, @whupdo
+					
+				
+					Show your support to rAthena by submitting your Issue or Pull Requests!  By providing enough useful info (Git Hash, Client Date, RE/Pre-RE, crashdump, how to reproduce, etc) you will help us to solve the issues faster]]></description><pubDate>Thu, 04 Jan 2018 03:37:49 +0000</pubDate></item><item><title>November Digest 2017</title><link><![CDATA[https://rathena.org/board/topic/113755-november-digest-2017/?do=findComment&comment=338204]]></link><description>November Digest 2017 The following digest covers the month of November, 2017.
+			 
+
+			
+				 
+			 
+
+			
+				Staff Changes
+			 
+
+			
+					None.
+				
+			
+				Development Highlights
+			 
+
+			
+					CORE:
+
+					
+							Started initial work for map server to C++ (c4a364be, a49a1a52)
+						
+						
+							Started initial work for char server to C++ (24b3509e)
+						
+						
+							Started initial work for login server to C++ (a587b913)
+						
+						
+							Refactored achievements to utilize C++ features (1c660357)
+						
+						
+							Resolved skill NK checks (6decf6c6)
+						
+						
+							Adjusted item drop minimum value limit (86241b0e)
+						
+						
+							Added battle config autoloot_adjust (63daab58)
+						
+						
+							Fixed twice assigned values (1f7a314c)
+						
+						
+							Changed emoticons constant name (ea88ea50)
+						
+						
+							Merged emotion and unitemote script command into `emotion`, the previous emoticons constant names and unitemote script command are now deprecated! (ea88ea50)
+						
+						
+							Updated Heal formulas to match kRO (805a6fb6)
+						
+						
+							Added support for 2017-10-25 and 2017-11-01 clients (243f4ca3, c20d1cc3)
+						
+						
+							Fixed spawn infos after mobdb reload (ba9314cb, e148bd3a, b2d904b7)
+						
+						
+							Implemented new monster range (b2ab9724)
+						
+						
+							Adjusting Vending tax to match official (8e002bc9)
+						
+						
+							Added a new Vending Tax config (3ce3bc3f)
+						
+						
+							Corrected a ShowError output (1645fc0c)
+						
+						
+							Fixed spinlock issue (618b9356)
+						
+					
+				
+					DATABASE:
+					
+							Added new NPC and Mob ID placeholders (af358809, 125ab285)
+						
+						
+							Corrected Mavka Card item bonus (e0b43ecc)
+						
+						
+							Updated warper NPC (c6fe9e9c)
+						
+						
+							Updated rune and skill effects of Rune Knight (da088357)
+						
+						
+							Corrected Valhalla Idol item bonus (c4ce8cfe)
+						
+						
+							Corrected Free Cast and Exceed Break walk speed (9766ec94)
+						
+						
+							Corrected Hyuke's Black Cat Ears and Wickebine's Black Cat Ears item bonus (50ef5650)
+						
+						
+							Corrected Hell Inferno Dark damage behavior (6fdb6059)
+						
+						
+							Fixed dummy at Prontera prevents critical attack from being displayed (c45db5d6)
+						
+						
+							Added 2 new hat effects (c5af8c76)
+						
+					
+				
+					SCRIPT:
+					
+							Fixed negative NPC input checks for arena_points.txt (c09929aa)
+						
+						
+							Added mapflag `nowarpto` to Novice Island RE maps (c6cc8ede)
+						
+						
+							Fixed deprecated emotion in GeffenMagicTournament.txt (cd089155)
+						
+						
+							Added save point in Izlude and updated monsters spawn in prt_fild08 (ca1b980e)
+						
+						
+							Fixed typo in Weapons Expert BK (ead1ed91)
+						
+						
+							Moved close3 function into Global_Functions.txt (d708fb35)
+						
+						
+							Fixed Bifrost Tower in Warper NPC (cfb8b42d)
+						
+					
+				
+					OTHERS:
+					
+							Cleaned up and harmonized cmake file (e7e9cf6d)
+						
+						
+							Temporary adjustment for strict aliasing (67331599)
+						
+						
+							Harmonized include guards (728a29d4)
+						
+						
+							Resolved some compile warnings (c13f271a)
+						
+						
+							Added `emotion` and `unitemote` conversion tool in Python script (576d4886, c5ceda03, 4f62f68e, 34817c97)
+						
+						
+							Respect the default platform toolset (a2e8d027)
+						
+						
+							Changed minimum VS version to VS 2013 SP5 (4de727ef)
+						
+						
+							Fixed compilation for the Windows XP API (60b54917)
+						
+						
+							Resolved a compile warning on pre-renewal (cdbb14b9)
+						
+						
+							Fixed tools/config.pl (03da2f68)
+						
+						
+							Corrected a potential map crash with achievements (114bebac)
+						
+						
+							Fix basic_test not having common.lib has dependancies registered in solution (664ea478)
+						
+						
+							Added custom src files to rAthena.sln (02044c0d)
+						
+					
+			
+				Statistics
+			 
+
+			
+					Excluding merges, 12 authors have pushed 65 commits to master and 85 commits to all branches.
+				
+				
+					On master, 383 files have changed.
+				
+				
+					There have been 8,322 additions and 7,251 deletions.
+				
+				
+					There are 31 merged Pull Requests and 13 Proposed Pull Requests.
+				
+				
+					There are 12 new Issues and 55 Closed Issues.
+				
+			
+				List of Contributors
+			 
+
+			
+					@4144, @AetherHaziel, @aleos89, @Atemo, @CairoLee, @cydh, @Daegaladh, @darhylism, @ecdarreola, @Encon21, @hartonox, @hendra814, @Jeybla, @Lemongrass3110, @lighta, @lunixoid, @mazvi, @mgksrt8, @RagnarokNova, @reymarbc, @Rytech2, @sader1992, @Sweet520, @Tokeiburu, @uddevil, @zackdreaver
+				
+			
+				Show your support to rAthena by submitting your Issue or Pull Requests!  By providing enough useful info (Git Hash, Client Date, RE/Pre-RE, crashdump, how to reproduce, etc) you will help us to solve the issues faster</description><pubDate>Sun, 03 Dec 2017 09:45:37 +0000</pubDate></item></channel></rss>
